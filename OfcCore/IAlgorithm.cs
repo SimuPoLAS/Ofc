@@ -1,0 +1,25 @@
+﻿namespace OfcCore
+{
+    using System;
+    using System.IO;
+    using JetBrains.Annotations;
+
+    public interface IAlgorithm
+    {
+        string Id { get; }
+
+        string Name { get; }
+
+        Version Version { get; }
+
+        bool SupportsDimension(int width, int height);
+    }
+
+    public interface IAlgorithm<T> : IAlgorithm
+    {
+        [MustUseReturnValue]
+        IReporter<T> Compress(IFile target, IConfiguaration configuaration, Stream output, int width, int height);
+
+        void Decompress(IFile target, IConfiguaration configuaration, Stream input, int width, int height, IReporter<T> reporter);
+    }
+}
