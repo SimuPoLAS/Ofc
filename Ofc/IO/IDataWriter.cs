@@ -1,7 +1,12 @@
 ﻿namespace Ofc.IO
 {
+    using System.IO;
+
     internal interface IDataWriter
     {
+        Stream BaseStream { get; }
+
+
         void Write(byte[] buffer, int offset, int amount);
 
         void WriteBytes(byte[] value);

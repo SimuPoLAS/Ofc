@@ -5,7 +5,7 @@
 
     internal class BinaryDataWriter : IDataWriter, IDisposable
     {
-        internal Stream BaseStream { get; }
+        public Stream BaseStream { get; }
 
 
         private readonly byte[] _buffer = new byte[16];

@@ -1,7 +1,12 @@
 ﻿namespace Ofc.IO
 {
+    using System.IO;
+
     internal interface IDataReader
     {
+        Stream BaseStream { get; }
+
+
         int Read(byte[] buffer, int offset, int amount);
 
         byte[] ReadBytes(int amount);
