@@ -20,6 +20,6 @@
         [MustUseReturnValue]
         IReporter<T> Compress(IFile target, IConfiguaration configuaration, Stream output, int width, int height);
 
-        void Decompress(IFile target, IConfiguaration configuaration, Stream input, int width, int height, IReporter<T> reporter);
+        void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<T> reporter);
     }
 }

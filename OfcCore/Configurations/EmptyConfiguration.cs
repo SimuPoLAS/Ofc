@@ -4,9 +4,9 @@
 
     public class EmptyConfiguration : IConfiguaration
     {
-        private IConfiguaration _instance;
+        private static IConfiguaration instance;
 
-        public IConfiguaration Instance => _instance ?? (_instance = new EmptyConfiguration());
+        public static IConfiguaration Instance => instance ?? (instance = new EmptyConfiguration());
 
 
         private EmptyConfiguration()

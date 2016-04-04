@@ -1,4 +1,5 @@
-﻿#pragma warning disable 1591
+﻿
+#pragma warning disable 1591
 // ReSharper disable CheckNamespace
 // ReSharper disable UnusedMember.Global
 // ReSharper disable MemberCanBePrivate.Global
@@ -351,7 +352,7 @@ namespace JetBrains.Annotations
     /// </code>
     /// </example>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    [BaseTypeRequired(typeof(Attribute))]
+    [BaseTypeRequired(typeof (Attribute))]
     [Conditional("JETBRAINS_ANNOTATIONS")]
     internal sealed class BaseTypeRequiredAttribute : Attribute
     {

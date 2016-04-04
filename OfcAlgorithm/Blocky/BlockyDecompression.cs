@@ -7,6 +7,7 @@ using OfcAlgorithm.Blocky.Method.PatternOffset;
 using OfcAlgorithm.Blocky.Method.PatternPingPong;
 using OfcAlgorithm.Blocky.Method.PatternSame;
 using OfcAlgorithm.Integration;
+using OfcAlgorithm.Integration.Dummy;
 using OfcCore;
 using OfcCore.Utility;
 using Methods = OfcAlgorithm.Blocky.Blockfinding.Blockfinding.Methods;
@@ -48,7 +49,9 @@ namespace OfcAlgorithm.Blocky
                 {
                     var block = DecompressionMethod.ReadDefaultBlockHeader(_bitReader, _metadata);
                     var method = GetMethodForBlock(block);
+                    ((DummyReporter)_writer).FileStream.WriteLine(method.GetType().Name + " Start");
                     valueCount += method.Read(this, block, _bitReader);
+                    ((DummyReporter)_writer).FileStream.WriteLine(method.GetType().Name + " End");
                 }
                 else
                 {
@@ -56,6 +59,7 @@ namespace OfcAlgorithm.Blocky
                     valueCount++;
                 }
             }
+            _writer.Flush();
         }
 
         private DecompressionMethod GetMethodForBlock(Block block)

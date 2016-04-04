@@ -2,9 +2,9 @@
 {
     internal enum OfcListType
     {
-        Scalar,
-        Vector,
-        Tensor,
+        Scalar = 1,
+        Vector = 3,
+        Tensor = 9,
         Anonymous
     }
 }

@@ -44,7 +44,7 @@ namespace OfcAlgorithm.Herbert.Integration
             return new CompressionSplitter(compressions);
         }
 
-        public void Decompress(IFile target, IConfiguaration configuaration, Stream input, int width, int height, IReporter<OfcNumber> reporter)
+        public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<OfcNumber> reporter)
         {
             throw new NotImplementedException();
         }
