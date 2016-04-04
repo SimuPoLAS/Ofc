@@ -25,7 +25,7 @@ namespace Ofc.Parsing.Hooks
         private IConverter<T> _converter;
         private Encoding _encoding;
 
-        private IFile _target = null;
+        private IFile _target;
         private IConfiguaration _configuaration = EmptyConfiguration.Instance;
 
         private IHandler<string> _listHandler;

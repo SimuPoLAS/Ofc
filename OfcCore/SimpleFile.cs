@@ -2,7 +2,7 @@
 {
     using System.IO;
 
-    internal class File : IFile
+    internal class SimpleFile : IFile
     {
         private FileInfo _info;
 
@@ -18,7 +18,7 @@
         public string Path => _info.FullName;
 
 
-        public File(string path)
+        public SimpleFile(string path)
         {
             _info = new FileInfo(path);
         }
