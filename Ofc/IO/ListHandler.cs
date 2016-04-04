@@ -1,30 +1,41 @@
 ﻿namespace Ofc.IO
 {
+    using System;
     using OfcCore;
+    using OfcCore.Configurations;
 
     internal abstract class ListHandler : IHandler<string>
     {
-        public IConfiguaration Configuaration { get; }
+        public IConfiguaration Configuaration { get; } = new SimpleConfiguration();
+
+        internal bool Open { get; private set; }
+
+        protected abstract bool SupportsStacking { get; }
 
 
-        public void End()
+        protected IDataWriter Writer;
+
+
+        protected ListHandler(IDataWriter writer)
         {
-            throw new System.NotImplementedException();
+            Open = false;
+            Writer = writer;
         }
 
-        public void HandleEntry(string value)
+
+        public virtual void End()
         {
-            throw new System.NotImplementedException();
+            if (!Open) throw new InvalidOperationException("The list handler is not opened yet.");
+            if (!SupportsStacking) Open = false;
         }
 
-        public void HandleEntries(string[] values, int offset, int count)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract void HandleEntry(string value);
 
-        public void Start()
+        public abstract void HandleEntries(string[] values, int offset, int count);
+
+        public virtual void Start()
         {
-            throw new System.NotImplementedException();
+            if (Open && !SupportsStacking) throw new NotSupportedException("Stacking is not supported.");
         }
     }
 }

@@ -8,6 +8,7 @@ namespace Ofc.Parsing.Hooks
     using System.Text;
     using JetBrains.Annotations;
     using Ofc.IO;
+    using Ofc.IO.Handlers;
     using Ofc.Util;
     using OfcCore;
     using OfcCore.Configurations;
@@ -23,7 +24,6 @@ namespace Ofc.Parsing.Hooks
         private bool _hasAlgorithm;
         private IConverter<T> _converter;
         private Encoding _encoding;
-        private IReporter<T> _reporter;
 
         private IFile _target = null;
         private IConfiguaration _configuaration = EmptyConfiguration.Instance;
@@ -94,7 +94,7 @@ namespace Ofc.Parsing.Hooks
         {
             if (_inList) throw new NotSupportedException("Stacking not supported.");
             _inList = true;
-            if (!_hasAlgorithm) _listHandler = null;
+            if (!_hasAlgorithm) _listHandler = new RawListHandler(_writer);
             else
             {
                 switch (type)
@@ -114,6 +114,7 @@ namespace Ofc.Parsing.Hooks
                         throw new ArgumentOutOfRangeException(nameof(type), type, null);
                 }
             }
+            
         }
 
         public void HandleListEntry(string value)
@@ -130,15 +131,8 @@ namespace Ofc.Parsing.Hooks
 
         public void LeaveList()
         {
-            if (_reporter == null)
-            {
-                _writer.WriteId(G_GENERAL, 0);
-            }
-            else
-            {
-                _reporter.Finish();
-                _reporter = null;
-            }
+            if (!_inList) throw new InvalidOperationException("No list is opened.");
+            _listHandler.End();
         }
 
         public void HandleMacro(OfcMacroType macro, [CanBeNull] string data)
