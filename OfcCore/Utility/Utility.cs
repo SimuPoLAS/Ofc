@@ -19,6 +19,7 @@ namespace OfcCore.Utility
 
         public static ulong GetMaxValue(byte bits) => SectionMasks[bits];
 
+
         public static byte GetNeededBits(this long x)
         {
             //var y = x & (x - 1);

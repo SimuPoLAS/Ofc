@@ -21,7 +21,7 @@ namespace Ofc
     {
         public static void Main(string[] args)
         {
-
+            var ofcNumber = OfcNumber.Parse(93434.45234d.ToString(CultureInfo.InvariantCulture));
             CompressFolder(@"C:\damBreak4phase_wp8", "out.kappa.bin");
 
 
@@ -106,7 +106,7 @@ namespace Ofc
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(srcPath + ": " + ex);
+                    Console.WriteLine(srcPath );
                 }
 
             }

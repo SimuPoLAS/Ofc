@@ -1,6 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using OfcCore.Utility;
 
 namespace OfcAlgorithm.Integration
 {
@@ -12,36 +14,36 @@ namespace OfcAlgorithm.Integration
         public double Reconstructed => Number * (IsNegative ? -1 : 1) * Math.Pow(10, Exponent);
         public byte NeededBitsNumber;
         public readonly byte NeededBitsExponent;
-        private static readonly long[] NeededBits;
+        //private static readonly long[] NeededBits;
 
-        static OfcNumber()
-        {
-            NeededBits = new long[64];
-            for (var i = 0; i < NeededBits.Length; i++)
-                NeededBits[i] = (long)(Math.Pow(2, i + 1) - 1);
-        }
+        //static OfcNumber()
+        //{
+        //    NeededBits = new long[64];
+        //    for (var i = 0; i < NeededBits.Length; i++)
+        //        NeededBits[i] = (long)(Math.Pow(2, i + 1) - 1);
+        //}
 
         public OfcNumber(long number, short exponent)
         {
             IsNegative = number < 0;
             Number = Math.Abs(number);
             Exponent = exponent;
-            NeededBitsNumber = 0;
-            NeededBitsExponent = 0;
+            NeededBitsNumber = Number.GetNeededBits();
+            NeededBitsExponent = Utility.GetNeededBits(Exponent);
 
-            for (byte i = 0; i < 64; i++)
-                if (NeededBits[i] >= Number)
-                {
-                    NeededBitsNumber = (byte)(i + 1);
-                    break;
-                }
+            //for (byte i = 0; i < 64; i++)
+            //    if (NeededBits[i] >= Number)
+            //    {
+            //        NeededBitsNumber = (byte)(i + 1);
+            //        break;
+            //    }
 
-            for (byte i = 0; i < 64; i++)
-                if (NeededBits[i] >= Math.Abs(Exponent))
-                {
-                    NeededBitsExponent = (byte)(i + 1);
-                    break;
-                }
+            //for (byte i = 0; i < 64; i++)
+            //    if (NeededBits[i] >= Math.Abs(Exponent))
+            //    {
+            //        NeededBitsExponent = (byte)(i + 1);
+            //        break;
+            //    }
         }
 
         public static OfcNumber Parse(string value)
@@ -67,19 +69,49 @@ namespace OfcAlgorithm.Integration
         public static implicit operator double(OfcNumber sc1) => sc1.Reconstructed;
         public static implicit operator int(OfcNumber sc1) => (int)sc1.Reconstructed;
 
-        public static OfcNumber operator +(OfcNumber num1, OfcNumber num2)
+        public static bool operator <(OfcNumber first, OfcNumber second) => first.Reconstructed < second.Reconstructed;
+        public static bool operator >(OfcNumber first, OfcNumber second) => first.Reconstructed > second.Reconstructed;
+
+        public static bool operator <(OfcNumber first, double second) => first.Reconstructed < second;
+        public static bool operator >(OfcNumber first, double second) => first.Reconstructed > second;
+
+        public static bool operator <(double first, OfcNumber second) => first < second.Reconstructed;
+        public static bool operator >(double first, OfcNumber second) => first > second.Reconstructed;
+
+
+        //public static OfcNumber operator +(OfcNumber num1, OfcNumber num2)
+        //{
+        //    num1.Number += num2.Number * (num2.IsNegative ? -1 : 1);
+        //    num1.Exponent += num2.Exponent;
+        //    return num1;
+        //}
+
+        //public static OfcNumber operator -(OfcNumber num1, OfcNumber num2)
+        //{
+        //    num1.Number -= num2.Number * (num2.IsNegative ? -1 : 1);
+        //    num1.Exponent -= num2.Exponent;
+        //    return num1;
+        //}
+
+        public OfcNumber AddEach(OfcNumber other)
         {
-            num1.Number += num2.Number * (num2.IsNegative ? -1 : 1);
-            num1.Exponent += num2.Exponent;
-            return num1;
+            var num = this;
+            num.Number += other.Number * (other.IsNegative ? -1 : 1);
+            num.Exponent += other.Exponent;
+            return num;
         }
 
-        public static OfcNumber operator -(OfcNumber num1, OfcNumber num2)
+        public OfcNumber SubtractEach(OfcNumber other)
         {
-            num1.Number -= num2.Number * (num2.IsNegative ? -1 : 1);
-            num1.Exponent -= num2.Exponent;
-            return num1;
+            var num = this;
+            num.Number -= other.Number * (other.IsNegative ? -1 : 1);
+            num.Exponent -= other.Exponent;
+            return num;
         }
+
+        public double SubtractGetDouble(OfcNumber num2) => Reconstructed - num2.Reconstructed;
+
+        public double AddGetDouble(OfcNumber num2) => Reconstructed + num2.Reconstructed;
 
         public OfcNumber LinearMultiplyEach(int num)
         {

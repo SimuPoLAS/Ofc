@@ -16,11 +16,11 @@ namespace OfcAlgorithm.Blocky.Method.PatternOffset
             writer.Write(val1);
             writer.Write(val2);
 
-            var difference = val2 - val1;
+            var difference = val2.SubtractEach(val1);
 
             for (var i = 1; i < block.Length - 1; i++)
             {
-                writer.Write(difference.LinearMultiplyEach(i) + val2);
+                writer.Write(difference.LinearMultiplyEach(i).AddEach(val2));
             }
 
             return block.Length;
