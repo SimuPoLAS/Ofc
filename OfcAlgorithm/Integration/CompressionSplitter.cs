@@ -1,10 +1,13 @@
-﻿using System;
-using OfcCore;
-
-namespace OfcAlgorithm.Integration
+﻿namespace OfcAlgorithm.Integration
 {
-    class CompressionSplitter : IReporter<OfcNumber>
+    using System;
+    using OfcCore;
+    using OfcCore.Configurations;
+
+    internal class CompressionSplitter : IReporter<OfcNumber>
     {
+        public IConfiguaration Configuaration { get; } = new SimpleConfiguration();
+
         private readonly IReporter<OfcNumber>[] _blockyCompressions;
         private int _numberIndex;
         private readonly int _count;
@@ -44,7 +47,7 @@ namespace OfcAlgorithm.Integration
         public void Report(OfcNumber number)
         {
             _blockyCompressions[_numberIndex].Report(number);
-            _numberIndex = (_numberIndex + 1) % _count;
+            _numberIndex = (_numberIndex + 1)%_count;
         }
 
         public void Report(OfcNumber[] numbers, int offset, int count) //Todo: make performant

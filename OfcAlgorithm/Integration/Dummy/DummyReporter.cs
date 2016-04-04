@@ -1,12 +1,15 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using OfcCore;
-
-namespace OfcAlgorithm.Integration.Dummy
+﻿namespace OfcAlgorithm.Integration.Dummy
 {
+    using System;
+    using System.Globalization;
+    using System.IO;
+    using OfcCore;
+    using OfcCore.Configurations;
+
     public class DummyReporter : IReporter<OfcNumber>
     {
+        public IConfiguaration Configuaration { get; } = new SimpleConfiguration();
+
         public readonly StreamWriter FileStream;
         public int Layers => 0;
         public bool SupportsLayer => false;
