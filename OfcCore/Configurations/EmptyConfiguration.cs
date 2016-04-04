@@ -1,12 +1,12 @@
-﻿namespace OfcCore.Configurations
-{
-    using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
+namespace OfcCore.Configurations
+{
     public class EmptyConfiguration : IConfiguaration
     {
-        private IConfiguaration _instance;
+        private static IConfiguaration _instance;
 
-        public IConfiguaration Instance => _instance ?? (_instance = new EmptyConfiguration());
+        public static IConfiguaration Instance => _instance ?? (_instance = new EmptyConfiguration());
 
 
         private EmptyConfiguration()

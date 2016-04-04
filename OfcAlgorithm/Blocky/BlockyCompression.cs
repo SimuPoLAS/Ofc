@@ -226,7 +226,7 @@ namespace OfcAlgorithm.Blocky
             }
 
             _writer.Flush(); // This is nessecary. Will write the last buffered byte may only be partially complete!
-            _writer.Dispose(); // debug
+          //  _writer.Dispose(); // debug
         }
 
 

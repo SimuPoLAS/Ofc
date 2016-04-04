@@ -64,8 +64,8 @@ namespace OfcAlgorithm.Integration
 
         public override string ToString() => $"{{Reconstructed: {Reconstructed}, Number: {Number}({NeededBitsNumber}), Exponent: {Exponent}({NeededBitsExponent}}}";
 
-        public static implicit operator double (OfcNumber sc1) => sc1.Reconstructed;
-        public static implicit operator int (OfcNumber sc1) => (int)sc1.Reconstructed;
+        public static implicit operator double(OfcNumber sc1) => sc1.Reconstructed;
+        public static implicit operator int(OfcNumber sc1) => (int)sc1.Reconstructed;
 
         public static OfcNumber operator +(OfcNumber num1, OfcNumber num2)
         {
@@ -87,6 +87,22 @@ namespace OfcAlgorithm.Integration
             res.Number *= num;
             res.Exponent *= (short)num;
             return res;
+        }
+
+        public bool Equals(OfcNumber other)
+        {
+            return IsNegative == other.IsNegative && Number == other.Number && Exponent == other.Exponent;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = IsNegative.GetHashCode();
+                hashCode = (hashCode * 397) ^ Number.GetHashCode();
+                hashCode = (hashCode * 397) ^ Exponent.GetHashCode();
+                return hashCode;
+            }
         }
     }
 }

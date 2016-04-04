@@ -1,7 +1,7 @@
-﻿namespace OfcCore
-{
-    using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
+namespace OfcCore
+{
     public interface IConfiguaration
     {
         [CanBeNull]

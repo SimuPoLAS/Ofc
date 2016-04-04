@@ -1,4 +1,11 @@
-﻿namespace Ofc
+﻿using System.Globalization;
+using OfcAlgorithm.Blocky.Integration;
+using OfcAlgorithm.Integration;
+using OfcAlgorithm.Integration.Dummy;
+using OfcCore;
+using OfcCore.Configurations;
+
+namespace Ofc
 {
     using System;
     using System.Collections;
@@ -15,6 +22,10 @@
         public static void Main(string[] args)
         {
 
+            CompressFolder(@"C:\damBreak4phase_wp8", "out.kappa.bin");
+
+
+            return;
             using (var memory = new MemoryStream())
             {
                 using (var writer = new BinaryDataWriter(memory))
@@ -28,7 +39,7 @@
                 memory.Position = 0;
                 using (var reader = new BinaryDataReader(memory))
                 {
-                    
+
                 }
             }
 
@@ -71,6 +82,46 @@
             // Write an error message
             Console.WriteLine("Invalid arguments.\n");
             Console.Write(argumentParser.GenerateHelp());
+        }
+
+        static void CompressFolder(string srcPath, string targetPath)
+        {
+            using (new FileStream(targetPath, FileMode.Create)) { }
+            foreach (var file in Directory.GetFiles(srcPath, "*", SearchOption.AllDirectories))
+            {
+                CompressFile(file, targetPath, FileMode.Append);
+            }
+        }
+
+        static void CompressFile(string srcPath, string targetPath, FileMode mode = FileMode.Create)
+        {
+            using (var str = new FileStream(targetPath, mode))
+            {
+                BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
+                try
+                {
+                    var lexi = new OfcLexer(new FileInputStream(srcPath));
+                    var purser = new OfcParser(lexi, new AlgorithmHook(new BlockyAlgorithm(), str));
+                    purser.Parse();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(srcPath + ": " + ex);
+                }
+
+            }
+        }
+
+        static void DecompressFile(string srcPath, string targetPath)
+        {
+            using (var str = new FileStream(srcPath, FileMode.Open))
+            {
+                var item = 0;
+                while (str.Position < str.Length - 1)
+                {
+                    new BlockyAlgorithm().Decompress(null, EmptyConfiguration.Instance, str, new DummyReporter(Path.GetDirectoryName(targetPath) + "\\" + item++ + "." + Path.GetFileName(targetPath)));
+                }
+            }
         }
 
         internal enum CommandLineLayers

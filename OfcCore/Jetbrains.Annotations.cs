@@ -1,4 +1,7 @@
-﻿#pragma warning disable 1591
+﻿using System;
+using System.Diagnostics;
+
+#pragma warning disable 1591
 // ReSharper disable CheckNamespace
 // ReSharper disable UnusedMember.Global
 // ReSharper disable MemberCanBePrivate.Global
@@ -9,9 +12,6 @@
 
 namespace JetBrains.Annotations
 {
-    using System;
-    using System.Diagnostics;
-
     /// <summary>
     ///     Indicates that the value of the marked element could be <c>null</c> sometimes,
     ///     so the check for <c>null</c> is necessary before its usage.

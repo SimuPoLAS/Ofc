@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "run": {
+      "commandName": "run",
+      "workingDirectory": "bin"
+    }
+  }
+}
