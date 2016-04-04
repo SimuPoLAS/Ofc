@@ -17,7 +17,7 @@ namespace Ofc.Parsing.Hooks
     {
         private const double EPSILON = 0.000001;
 
-        private const int G_GENERAL = 0, G_LIST = 1, G_KEYWORD = 2, G_STRING = 3, G_DIRECTIVE = 6, G_DIMENSION = 7;
+        internal const int G_GENERAL = 0, G_LIST = 1, G_KEYWORD = 2, G_STRING = 3, G_DIRECTIVE = 6, G_DIMENSION = 7;
 
         private IDataWriter _writer;
         private IAlgorithm<T> _algorithm;
