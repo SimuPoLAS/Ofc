@@ -2,7 +2,7 @@
 {
     using System.IO;
 
-    internal class SimpleFile : IFile
+    public class SimpleFile : IFile
     {
         private FileInfo _info;
 
