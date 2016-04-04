@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using OfcAlgorithm.Integration;
-using OfcCore;
-using OfcCore.Utility;
-
-namespace OfcAlgorithm.Herbert
+﻿namespace OfcAlgorithm.Herbert
 {
-    class HerbertCompression : IReporter<OfcNumber>
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using OfcAlgorithm.Integration;
+    using OfcCore;
+    using OfcCore.Configurations;
+    using OfcCore.Utility;
+
+    internal class HerbertCompression : IReporter<OfcNumber>
     {
+        public IConfiguaration Configuaration { get; } = new SimpleConfiguration();
+
         private Stream _writer;
         private List<long> Values;
         public int Layers { get; }
@@ -19,7 +22,7 @@ namespace OfcAlgorithm.Herbert
         public HerbertCompression(int elements, Stream writer)
         {
             Values = elements < 4 ? new List<long>() : new List<long>(elements);
-            this._writer = writer;
+            _writer = writer;
         }
 
         public HerbertCompression(IFile file, int elements, Stream writer) : this(elements, writer)
@@ -34,13 +37,12 @@ namespace OfcAlgorithm.Herbert
             for (var i = index; i < max; i++)
             {
                 aggrCount += _occurences[i];
-                var save = aggrCount * (max - i - 1) - (count - aggrCount);
+                var save = aggrCount*(max - i - 1) - (count - aggrCount);
                 if (save <= 0) continue;
 
-                save += BruteForceSolution(max, count - aggrCount, (byte)(i + 1));
+                save += BruteForceSolution(max, count - aggrCount, (byte) (i + 1));
                 if (save > maxSaved)
                 {
-
                     maxSaved = save;
                 }
             }
@@ -55,7 +57,7 @@ namespace OfcAlgorithm.Herbert
             for (var i = 0; i < max; i++)
             {
                 aggrCount += _occurences[i];
-                var tempSave = aggrCount * (max - i - 1) - (count - aggrCount);
+                var tempSave = aggrCount*(max - i - 1) - (count - aggrCount);
                 if (tempSave <= 0) continue;
 
                 aggrCount = 0;
@@ -80,18 +82,17 @@ namespace OfcAlgorithm.Herbert
                 }
             }
 
-            var bitcount = max * count;
+            var bitcount = max*count;
 
 
             var x = BruteForceSolution(max, count);
             var y = 0;
             var points = CalculateSolution(max, count, ref y);
-            Console.WriteLine((x / ((float)bitcount) * 100f) + " % @ " + (y / ((float)bitcount) * 100f) + " count: " + count);// + _file?.Name);
+            Console.WriteLine(x/(float) bitcount*100f + " % @ " + y/(float) bitcount*100f + " count: " + count); // + _file?.Name);
 
 
             if (x != 0)
             {
-
             }
             //var points = new List<byte>();
 
@@ -107,30 +108,30 @@ namespace OfcAlgorithm.Herbert
             {
                 for (var i = 0; i < Values.Count; i++)
                 {
-                    stream.WriteByte(Values[i] < 0 ? (byte)1 : (byte)0, 1);
-                    stream.Write((ulong)Values[i], (byte)max);
+                    stream.WriteByte(Values[i] < 0 ? (byte) 1 : (byte) 0, 1);
+                    stream.Write((ulong) Values[i], (byte) max);
                 }
                 return;
             }
 
             for (var i = 0; i < Values.Count; i++)
             {
-                stream.WriteByte(Values[i] < 0 ? (byte)1 : (byte)0, 1);
-                var data = (ulong)Values[i];
+                stream.WriteByte(Values[i] < 0 ? (byte) 1 : (byte) 0, 1);
+                var data = (ulong) Values[i];
                 var pOffset = 0;
                 var initialSectionBits = points[pOffset++];
-                stream.Write(data, (byte)initialSectionBits);
+                stream.Write(data, (byte) initialSectionBits);
                 data = data >> initialSectionBits;
                 while (data > 0)
                 {
                     if (pOffset == points.Count)
                     {
-                        stream.Write(data, (byte)(max - points[pOffset - 1]));
+                        stream.Write(data, (byte) (max - points[pOffset - 1]));
                         break;
                     }
                     var extendedSectionBits = points[pOffset++];
                     var d = (data << 1) | 1;
-                    stream.Write(d, (byte)(extendedSectionBits + 1));
+                    stream.Write(d, (byte) (extendedSectionBits + 1));
                     data = data >> extendedSectionBits;
                 }
             }
@@ -143,7 +144,6 @@ namespace OfcAlgorithm.Herbert
             //    data = data >> extendedSectionBits;
             //}
             //stream.WriteByte(0, 1);
-
         }
 
 
@@ -166,7 +166,6 @@ namespace OfcAlgorithm.Herbert
 
         public void Report(OfcNumber number)
         {
-
             Values.Add(number.Number - lastNumber);
             lastNumber = number.Number;
             //  Values.Add(number.Exponent);

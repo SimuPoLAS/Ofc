@@ -13,8 +13,12 @@ using OfcCore.Utility;
 
 namespace OfcAlgorithm.Blocky
 {
+    using OfcCore.Configurations;
+
     class BlockyCompression : IReporter<OfcNumber>
     {
+        public IConfiguaration Configuaration { get; } = new SimpleConfiguration();
+
         public int Layers => 0;
         public bool SupportsLayer => false;
 

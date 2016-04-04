@@ -1,9 +1,8 @@
-﻿using JetBrains.Annotations;
-
-namespace OfcCore
+﻿namespace OfcCore
 {
     using System;
     using System.IO;
+    using JetBrains.Annotations;
 
     public interface IAlgorithm
     {

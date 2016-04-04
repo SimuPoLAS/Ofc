@@ -1,7 +1,7 @@
-﻿using JetBrains.Annotations;
-
-namespace OfcCore
+﻿namespace OfcCore
 {
+    using JetBrains.Annotations;
+
     public static class Extentions
     {
         [CanBeNull]

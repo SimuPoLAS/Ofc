@@ -4,6 +4,9 @@
 
     public interface IReporter<in T> : IDisposable
     {
+        IConfiguaration Configuaration { get; }
+
+
         void Finish();
 
         void Flush();
