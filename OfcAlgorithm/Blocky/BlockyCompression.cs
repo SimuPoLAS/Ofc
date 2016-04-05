@@ -79,6 +79,8 @@ namespace OfcAlgorithm.Blocky
         /// </summary>
         public void Finish()
         {
+            if (Values.Count == 0) return;
+
             Metadata = BlockyMetadata.FromData(Values);
             Metadata.MaxNeededBitsNeededBitsNumber = Utility.GetNeededBits(Metadata.MaxNeededBitsNumber);
 
@@ -232,7 +234,7 @@ namespace OfcAlgorithm.Blocky
             }
 
             _writer.Flush(); // This is nessecary. Will write the last buffered byte may only be partially complete!
-          //  _writer.Dispose(); // debug
+                             //  _writer.Dispose(); // debug
         }
 
 

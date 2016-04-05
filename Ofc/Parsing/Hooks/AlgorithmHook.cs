@@ -48,7 +48,7 @@
 
         public void EnterList(OfcListType type, int capacity)
         {
-            if (_compress != null) throw new NotSupportedException();
+            if (_compress != null) return; //throw new NotSupportedException();
 
             _compress = _algorithm.Compress(null, _config, _output, (int) type, capacity);
         }
@@ -69,7 +69,7 @@
 
         public void LeaveList()
         {
-            _compress.Finish();
+            _compress?.Finish();
             _compress = null;
         }
 

@@ -54,7 +54,7 @@ namespace OfcAlgorithm.Integration
                     commaIndex = i;
                     continue;
                 }
-                if (value[i] == 'e')
+                if (value[i] == 'e' || value[i] == 'E')
                     return new OfcNumber(long.Parse(value.Substring(0, i), NumberStyles.Any), (short)(-(i - 1) + commaIndex + short.Parse(value.Substring(i + 1))));
             }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using OfcAlgorithm.Integration;
 using OfcCore.Utility;
@@ -33,6 +34,7 @@ namespace OfcAlgorithm.Blocky
 
         public static BlockyMetadata FromData(List<OfcNumber> values)
         {
+            if(values.Count == 0) throw new InvalidOperationException("Cannot gather compression metadata with 0 values!");
             var metadata = new BlockyMetadata() { IsNegative = values.First().IsNegative, IsAbsolute = true, ValueCount = values.Count };
             foreach (var ofcNumber in values)
             {

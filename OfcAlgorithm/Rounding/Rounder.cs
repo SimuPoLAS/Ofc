@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using OfcAlgorithm.Integration;
@@ -30,9 +33,8 @@ namespace OfcAlgorithm.Rounding
 
             var currentStart = 0;
             var currentMin = numbers[0].Reconstructed;
-            var currentMinOfc = numbers[0];
             var currentMax = currentMin;
-            var currentMaxOfc = currentMinOfc;
+            var currentMaxOfc = numbers[0];
 
             for (var i = 1; i < numbers.Count; i++)
             {
@@ -46,22 +48,46 @@ namespace OfcAlgorithm.Rounding
 
                 if (numberRec > currentMax)
                 {
-                    if (currentStart == i - 1)
-                    {
-                        currentStart = i;
-                        continue;
-                    }
-
+                    currentMax = numberRec;
                     if (numberRec - currentMin > epsilonTwice)
                     {
-                        var allNum = currentMaxOfc - epsilonOfc;
-                        for (var j = currentStart; j < i; j++)
-                        {
-                            numbers[j] = allNum;
-                        }
+                        if (currentStart != i - 1)
+                            AdjustNumbers(numbers, currentStart, i, currentMaxOfc, epsilonOfc);
+                        currentStart = i;
+                        currentMin = numberRec;
+                        currentMaxOfc = number;
                     }
                 }
 
+                if (numberRec < currentMin)
+                {
+                    currentMin = numberRec;
+                    if (currentMax - numberRec > epsilonTwice)
+                    {
+                        if (currentStart != i - 1)
+                            AdjustNumbers(numbers, currentStart, i, currentMaxOfc, epsilonOfc);
+                        currentStart = i;
+                        currentMax = numberRec;
+                        currentMaxOfc = number;
+                    }
+                }
+            }
+
+            //using (var writer = new StreamWriter(new FileStream(new Random().Next(0, 100) + "raw123.txt", FileMode.OpenOrCreate)))
+            //{
+            //    for (var i = 0; i < numbers.Count; i++)
+            //    {
+            //        writer.WriteLine(numbers[i].Reconstructed);
+            //    }
+            //}
+        }
+
+        private static void AdjustNumbers(List<OfcNumber> numbers, int index, int index2, OfcNumber currentMax, OfcNumber epsilonOfc)
+        {
+            var allNum = currentMax - epsilonOfc;
+            for (var j = index; j < index2; j++)
+            {
+                numbers[j] = allNum;
             }
         }
     }
