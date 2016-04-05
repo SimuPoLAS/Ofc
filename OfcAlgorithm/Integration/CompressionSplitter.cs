@@ -47,7 +47,7 @@
         public void Report(OfcNumber number)
         {
             _blockyCompressions[_numberIndex].Report(number);
-            _numberIndex = (_numberIndex + 1)%_count;
+            _numberIndex = (_numberIndex + 1) % _count;
         }
 
         public void Report(OfcNumber[] numbers, int offset, int count) //Todo: make performant
@@ -56,6 +56,11 @@
             {
                 Report(numbers[i]);
             }
+        }
+
+        public void ReportAll(OfcNumber[] values)
+        {
+            Report(values, 0, values.Length);
         }
 
         public void Dispose()

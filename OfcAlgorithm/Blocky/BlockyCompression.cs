@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using OfcAlgorithm.Blocky.Method.PatternPingPong;
 using OfcAlgorithm.Huffman;
 using OfcAlgorithm.Integration;
@@ -23,7 +24,7 @@ namespace OfcAlgorithm.Blocky
         public bool SupportsLayer => false;
 
         private readonly StreamBitWriter _writer;
-        public readonly List<OfcNumber> Values;
+        public List<OfcNumber> Values;
         public List<Block> Blocks;
         public BlockyMetadata Metadata;
         private HuffmanCreator _huffman;
@@ -70,6 +71,11 @@ namespace OfcAlgorithm.Blocky
                 var num = numbers[index];
                 Report(num);
             }
+        }
+
+        public void ReportAll(OfcNumber[] values)
+        {
+            Values = values.ToList();
         }
 
         /// <summary>

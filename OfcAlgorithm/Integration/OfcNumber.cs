@@ -1,6 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using OfcCore.Utility;
 
 namespace OfcAlgorithm.Integration
 {
@@ -11,37 +13,34 @@ namespace OfcAlgorithm.Integration
         public short Exponent;
         public double Reconstructed => Number * (IsNegative ? -1 : 1) * Math.Pow(10, Exponent);
         public byte NeededBitsNumber;
-        public readonly byte NeededBitsExponent;
-        private static readonly long[] NeededBits;
+        public byte NeededBitsExponent;
+        //private static readonly long[] NeededBits;
 
-        static OfcNumber()
-        {
-            NeededBits = new long[64];
-            for (var i = 0; i < NeededBits.Length; i++)
-                NeededBits[i] = (long)(Math.Pow(2, i + 1) - 1);
-        }
+        //static OfcNumber()
+        //{
+        //    NeededBits = new long[64];
+        //    for (var i = 0; i < NeededBits.Length; i++)
+        //        NeededBits[i] = (long)(Math.Pow(2, i + 1) - 1);
+        //}
 
         public OfcNumber(long number, short exponent)
         {
             IsNegative = number < 0;
             Number = Math.Abs(number);
             Exponent = exponent;
-            NeededBitsNumber = 0;
-            NeededBitsExponent = 0;
+            NeededBitsNumber = Number.GetNeededBits();
+            NeededBitsExponent = Utility.GetNeededBits(Exponent);
+        }
 
-            for (byte i = 0; i < 64; i++)
-                if (NeededBits[i] >= Number)
-                {
-                    NeededBitsNumber = (byte)(i + 1);
-                    break;
-                }
-
-            for (byte i = 0; i < 64; i++)
-                if (NeededBits[i] >= Math.Abs(Exponent))
-                {
-                    NeededBitsExponent = (byte)(i + 1);
-                    break;
-                }
+        /// <summary>
+        /// Needs to be called after chaning values - the metadata fields are no properties for performance reasons
+        /// </summary>
+        public void RecalculateMetadata()
+        {
+            IsNegative = Number < 0;
+            Number = Math.Abs(Number);
+            NeededBitsNumber = Number.GetNeededBits();
+            NeededBitsExponent = Utility.GetNeededBits(Exponent);
         }
 
         public static OfcNumber Parse(string value)
@@ -67,19 +66,63 @@ namespace OfcAlgorithm.Integration
         public static implicit operator double(OfcNumber sc1) => sc1.Reconstructed;
         public static implicit operator int(OfcNumber sc1) => (int)sc1.Reconstructed;
 
-        public static OfcNumber operator +(OfcNumber num1, OfcNumber num2)
+        public static bool operator <(OfcNumber first, OfcNumber second) => first.Reconstructed < second.Reconstructed;
+        public static bool operator >(OfcNumber first, OfcNumber second) => first.Reconstructed > second.Reconstructed;
+
+        public static bool operator <(OfcNumber first, double second) => first.Reconstructed < second;
+        public static bool operator >(OfcNumber first, double second) => first.Reconstructed > second;
+
+        public static bool operator <(double first, OfcNumber second) => first < second.Reconstructed;
+        public static bool operator >(double first, OfcNumber second) => first > second.Reconstructed;
+
+        /// <summary>
+        /// Will not expand the mantissa (number) for more accuracy, even if needed! (Preventing huge numbers)
+        /// Also, no overflow checks here
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns>Will add a OfcNumber to another OfcNumber and return the result</returns>
+        public static OfcNumber operator +(OfcNumber first, OfcNumber second)
         {
-            num1.Number += num2.Number * (num2.IsNegative ? -1 : 1);
-            num1.Exponent += num2.Exponent;
-            return num1;
+            first.Number += (int)(second.Number * Math.Pow(10, second.Exponent - first.Exponent));
+            first.RecalculateMetadata();
+            return first;
         }
 
-        public static OfcNumber operator -(OfcNumber num1, OfcNumber num2)
+        /// <summary>
+        /// Will not expand the mantissa (number) for more accuracy, even if needed! (Preventing huge numbers)
+        /// Also, no overflow checks here
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns>Will add a OfcNumber to another OfcNumber and return the result</returns>
+        public static OfcNumber operator -(OfcNumber first, OfcNumber second)
         {
-            num1.Number -= num2.Number * (num2.IsNegative ? -1 : 1);
-            num1.Exponent -= num2.Exponent;
-            return num1;
+            first.Number -= (int)(second.Number * Math.Pow(10, second.Exponent - first.Exponent));
+            first.RecalculateMetadata();
+            return first;
         }
+
+
+        public OfcNumber AddEach(OfcNumber other)
+        {
+            var num = this;
+            num.Number += other.Number * (other.IsNegative ? -1 : 1);
+            num.Exponent += other.Exponent;
+            return num;
+        }
+
+        public OfcNumber SubtractEach(OfcNumber other)
+        {
+            var num = this;
+            num.Number -= other.Number * (other.IsNegative ? -1 : 1);
+            num.Exponent -= other.Exponent;
+            return num;
+        }
+
+        public double SubtractGetDouble(OfcNumber num2) => Reconstructed - num2.Reconstructed;
+
+        public double AddGetDouble(OfcNumber num2) => Reconstructed + num2.Reconstructed;
 
         public OfcNumber LinearMultiplyEach(int num)
         {
