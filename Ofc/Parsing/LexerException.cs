@@ -1,7 +1,6 @@
 ﻿namespace Ofc.Parsing
 {
     using System;
-    using JetBrains.Annotations;
 
     internal class LexerException : Exception
     {
@@ -13,11 +12,11 @@
         {
         }
 
-        public LexerException(LexerExceptionCodes code) : this(code, null)
+        public LexerException(LexerExceptionCodes code) : this(code, new object[0])
         {
         }
 
-        public LexerException(LexerExceptionCodes code, [CanBeNull] string message) : base(message ?? ResolveExceptionMessage(code))
+        public LexerException(LexerExceptionCodes code, params object[] args) : base(string.Format(ResolveExceptionMessage(code), args))
         {
             Code = code;
         }
