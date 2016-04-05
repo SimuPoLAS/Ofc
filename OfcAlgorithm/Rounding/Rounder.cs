@@ -5,14 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using OfcAlgorithm.Integration;
 
-namespace OfcAlgorithm
+namespace OfcAlgorithm.Rounding
 {
-    public static class Unrandomizer
+    public static class Rounder
     {
-        public static void Unrandomize(OfcNumber[] numbers, IUnrandomizerConfig config)
+        public static void Round(List<OfcNumber> numbers, IUnrandomizerConfig config)
         {
-            throw new NotImplementedException();
-            if (numbers.Length < 2) return;
+            if (numbers.Count < 2) return;
             if (config.Min >= config.Max) throw new ArgumentException("Invalid config");
 
             var min = config.Min;
@@ -21,6 +20,7 @@ namespace OfcAlgorithm
             var maxOfc = OfcNumber.Parse(max.ToString(CultureInfo.InvariantCulture));
             var epsilon = config.Epsilon;
             var epsilonTwice = epsilon * 2d;
+            var epsilonOfc = OfcNumber.Parse(epsilon.ToString(CultureInfo.InvariantCulture));
 
             var currentStart = 0;
             var currentMin = numbers[0].Reconstructed;
@@ -28,7 +28,7 @@ namespace OfcAlgorithm
             var currentMax = currentMin;
             var currentMaxOfc = currentMinOfc;
 
-            for (var i = 1; i < numbers.Length; i++)
+            for (var i = 1; i < numbers.Count; i++)
             {
                 var number = numbers[i];
                 var numberRec = number.Reconstructed;
@@ -40,11 +40,18 @@ namespace OfcAlgorithm
 
                 if (numberRec > currentMax)
                 {
+                    if (currentStart == i - 1)
+                    {
+                        currentStart = i;
+                        continue;
+                    }
+
                     if (numberRec - currentMin > epsilonTwice)
                     {
+                        var allNum = currentMaxOfc - epsilonOfc;
                         for (var j = currentStart; j < i; j++)
                         {
-                          
+                            numbers[j] = allNum;
                         }
                     }
                 }
