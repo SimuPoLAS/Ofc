@@ -18,7 +18,7 @@ namespace OfcAlgorithm.Blocky
 
     class BlockyCompression : IReporter<OfcNumber>
     {
-        public IConfiguaration Configuaration { get; } = new SimpleConfiguration();
+        public IConfiguaration Configuaration { get; }
 
         public int Layers => 0;
         public bool SupportsLayer => false;
@@ -31,8 +31,9 @@ namespace OfcAlgorithm.Blocky
         private Blockfinding.Blockfinding _blockfinding;
         private int _totalPostCompressionOptimisationBlockValues;
 
-        public BlockyCompression(int capacity, Stream writer)
+        public BlockyCompression(int capacity, Stream writer, IConfiguaration config)
         {
+            Configuaration = config;
             _writer = new StreamBitWriter(writer);
             Values = capacity > 0 ? new List<OfcNumber>(capacity) : new List<OfcNumber>();
             Blocks = new List<Block>();

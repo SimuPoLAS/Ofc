@@ -1,4 +1,6 @@
-﻿namespace OfcCore
+﻿using JetBrains.Annotations;
+
+namespace OfcCore
 {
     using System;
 
@@ -13,6 +15,6 @@
 
         void Report(T value);
 
-        void Report(T[] values, int offset, int amount);
+        void Report([NotNull]T[] values, int offset, int amount);
     }
 }

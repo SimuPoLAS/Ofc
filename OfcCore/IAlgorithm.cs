@@ -50,7 +50,7 @@
         /// <param name="height">The amount of vertical elements (estimate).</param>
         /// <returns>Returns a reporter which is used to supply data to the algorithm.</returns>
         [MustUseReturnValue]
-        IReporter<T> Compress(IFile target, IConfiguaration configuaration, Stream output, int width, int height);
+        IReporter<T> Compress([CanBeNull]IFile target, [NotNull]IConfiguaration configuaration, [NotNull]Stream output, int width, int height);
 
         /// <summary>
         ///     Starts the decompression with the specified parameters.
@@ -59,6 +59,6 @@
         /// <param name="configuaration">The configuration used to read the compressed data.</param>
         /// <param name="input">The input stream where all the compressed data is read from.</param>
         /// <param name="reporter">The reporter which will be used by the algorithm to return the read values.</param>
-        void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<T> reporter);
+        void Decompress([CanBeNull]IFile target, [NotNull]IConfiguaration configuaration, [NotNull]Stream input, [NotNull]IReporter<T> reporter);
     }
 }

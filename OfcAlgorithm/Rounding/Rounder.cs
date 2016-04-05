@@ -3,22 +3,28 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using OfcAlgorithm.Integration;
+using OfcCore;
 
 namespace OfcAlgorithm.Rounding
 {
     public static class Rounder
     {
-        public static void Round(List<OfcNumber> numbers, IUnrandomizerConfig config)
+        public static void Round([NotNull]List<OfcNumber> numbers, [NotNull]IConfiguaration config)
         {
             if (numbers.Count < 2) return;
-            if (config.Min >= config.Max) throw new ArgumentException("Invalid config");
+            if (!config.Has("RoundingMin") || !config.Has("RoundingMax") || !config.Has("RoundingEpsilon")) throw new ArgumentException("Invalid config numbers (Rounding)");
 
-            var min = config.Min;
-            var max = config.Max;
+            var min = config.Get<double>("RoundingMin");
+            var max = config.Get<double>("RoundingMax");
+
+            if (min >= max) throw new ArgumentException("Invalid config numbers");
+
+
             var minOfc = OfcNumber.Parse(min.ToString(CultureInfo.InvariantCulture));
             var maxOfc = OfcNumber.Parse(max.ToString(CultureInfo.InvariantCulture));
-            var epsilon = config.Epsilon;
+            var epsilon = config.Get<double>("RoundingEpsilon");
             var epsilonTwice = epsilon * 2d;
             var epsilonOfc = OfcNumber.Parse(epsilon.ToString(CultureInfo.InvariantCulture));
 

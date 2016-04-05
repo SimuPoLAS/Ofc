@@ -9,18 +9,21 @@ using OfcCore.Configurations;
 
 namespace OfcAlgorithm.Rounding
 {
-    public class UnrandomizerReporter : IReporter<OfcNumber>
+    public class RounderReporter : IReporter<OfcNumber>
     {
         private readonly IReporter<OfcNumber> _nextReporter;
-        public IConfiguaration Configuaration { get; } = new SimpleConfiguration();
-        private List<OfcNumber> _numbers = new List<OfcNumber>(); //Todo: needs estimate for capacity argument! 
+        public IConfiguaration Configuaration { get; }
+        private readonly List<OfcNumber> _numbers = new List<OfcNumber>(); //Todo: needs estimate for capacity argument! 
+
         /// <summary>
         /// A reporter that rounds the numbers given to him, and gives them to the next reporter
         /// </summary>
         /// <param name="nextReporter"></param>
-        public UnrandomizerReporter([NotNull] IReporter<OfcNumber> nextReporter)
+        /// <param name="config"></param>
+        public RounderReporter([NotNull] IReporter<OfcNumber> nextReporter, [NotNull]IConfiguaration config)
         {
             _nextReporter = nextReporter;
+            Configuaration = config;
         }
 
         public void Dispose()
@@ -30,7 +33,7 @@ namespace OfcAlgorithm.Rounding
 
         public void Finish()
         {
-          //  Rounder.Round(_numbers, new { rofl: 123});
+            Rounder.Round(_numbers, Configuaration);
             _nextReporter.Report(_numbers.ToArray(), 0, _numbers.Count);
             _nextReporter.Finish();
         }
