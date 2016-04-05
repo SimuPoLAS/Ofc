@@ -1,4 +1,4 @@
-﻿namespace OfcAlgorithm
+﻿namespace OfcAlgorithm.Rounding
 {
     public interface IUnrandomizerConfig
     {
