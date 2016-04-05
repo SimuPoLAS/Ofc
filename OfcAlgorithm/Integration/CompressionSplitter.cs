@@ -58,11 +58,6 @@
             }
         }
 
-        public void ReportAll(OfcNumber[] values)
-        {
-            Report(values, 0, values.Length);
-        }
-
         public void Dispose()
         {
             foreach (var t in _blockyCompressions)

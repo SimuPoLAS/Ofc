@@ -31,7 +31,7 @@ namespace OfcAlgorithm.Rounding
         public void Finish()
         {
           //  Rounder.Round(_numbers, new { rofl: 123});
-            _nextReporter.ReportAll(_numbers.ToArray());
+            _nextReporter.Report(_numbers.ToArray(), 0, _numbers.Count);
             _nextReporter.Finish();
         }
 
@@ -51,12 +51,6 @@ namespace OfcAlgorithm.Rounding
             {
                 Report(values[i]);
             }
-        }
-
-        public void ReportAll(OfcNumber[] values)
-        {
-            if (_numbers.Count > 0) throw new InvalidOperationException();
-            _numbers = values.ToList();
         }
     }
 }

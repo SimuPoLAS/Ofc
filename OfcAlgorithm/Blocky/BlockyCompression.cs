@@ -73,11 +73,6 @@ namespace OfcAlgorithm.Blocky
             }
         }
 
-        public void ReportAll(OfcNumber[] values)
-        {
-            Values = values.ToList();
-        }
-
         /// <summary>
         /// Will calculate everything and make it ready for writing
         /// </summary>
