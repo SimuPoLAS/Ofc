@@ -13,11 +13,11 @@
         {
         }
 
-        public ParserException(ParserExceptionCodes code) : this(code, null)
+        public ParserException(ParserExceptionCodes code) : this(code, new object[0])
         {
         }
 
-        public ParserException(ParserExceptionCodes code, [CanBeNull] string message) : base(message ?? ResolveExceptionMessage(code))
+        public ParserException(ParserExceptionCodes code, params object[] args) : base(string.Format(ResolveExceptionMessage(code), args))
         {
             Code = code;
         }
