@@ -58,5 +58,77 @@ namespace Ofc {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid escape sequence &apos;\{0}&apos;.
+        /// </summary>
+        internal static string LexerErrorInvalidEscapeSequence {
+            get {
+                return ResourceManager.GetString("LexerErrorInvalidEscapeSequence", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unexpected end of stream..
+        /// </summary>
+        internal static string LexerErrorUnexpectedEndOfStream {
+            get {
+                return ResourceManager.GetString("LexerErrorUnexpectedEndOfStream", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unexpected symbol..
+        /// </summary>
+        internal static string LexerErrorUnexpectedSymbol {
+            get {
+                return ResourceManager.GetString("LexerErrorUnexpectedSymbol", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unexpected symbol &apos;{0}&apos;..
+        /// </summary>
+        internal static string LexerErrorUnexpectedSymbol1 {
+            get {
+                return ResourceManager.GetString("LexerErrorUnexpectedSymbol1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unknown lexer error..
+        /// </summary>
+        internal static string LexerErrorUnknown {
+            get {
+                return ResourceManager.GetString("LexerErrorUnknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unterminated block comment..
+        /// </summary>
+        internal static string LexerErrorUnterminatedBlockComment {
+            get {
+                return ResourceManager.GetString("LexerErrorUnterminatedBlockComment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unterminated string container..
+        /// </summary>
+        internal static string LexerErrorUnterminatedStringContainer {
+            get {
+                return ResourceManager.GetString("LexerErrorUnterminatedStringContainer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unterminated string literal..
+        /// </summary>
+        internal static string LexerErrorUnterminatedStringLiteral {
+            get {
+                return ResourceManager.GetString("LexerErrorUnterminatedStringLiteral", resourceCulture);
+            }
+        }
     }
 }

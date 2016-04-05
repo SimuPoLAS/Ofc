@@ -1,11 +1,10 @@
-﻿#pragma warning disable CS0612
-
-namespace Ofc.Parsing
+﻿namespace Ofc.Parsing
 {
     using System;
     using JetBrains.Annotations;
     using Ofc.IO;
 
+    // todo more accurate column/line detection 
     internal sealed class OfcLexer : IInputStream<OfcToken>
     {
         /** base members */
@@ -27,11 +26,11 @@ namespace Ofc.Parsing
 
         private uint _currentLine = 1;
         private uint _currentColumn = 1;
-        private uint _currentLength;
+        private uint _currentPosition;
 
         private uint _tokenLine;
         private uint _tokenColumn;
-        private uint _tokenLength;
+        private uint _tokenPosition;
 
         /** lexer specific members */
         private bool _symbolOnly;
@@ -77,9 +76,12 @@ namespace Ofc.Parsing
 
         private void Record(char c)
         {
-            _currentLength++;
+            _currentPosition++;
             if (c == '\n')
             {
+#if CDUMP
+                Console.WriteLine($"nl: x: {_currentLine}; y: {_currentColumn}");
+#endif
                 _currentLine++;
                 _currentColumn = 1;
                 return;
@@ -92,21 +94,25 @@ namespace Ofc.Parsing
             _currentColumn++;
         }
 
+        // todo record does not check for buffer length
         private void Record(uint count)
         {
-            _currentLength += count;
+            _currentPosition += count;
             for (var i = 0; i < count; i++)
             {
                 if (_buffer[_position + i] == '\n')
                 {
+#if CDUMP
+                    Console.WriteLine($"nl: x: {_currentLine}; y: {_currentColumn}");
+#endif
                     _currentLine++;
                     _currentColumn = 1;
-                    return;
+                    continue;
                 }
                 if (_buffer[_position + i] == '\t')
                 {
                     _currentColumn += _tabSize;
-                    return;
+                    continue;
                 }
                 _currentColumn++;
             }
@@ -127,7 +133,10 @@ namespace Ofc.Parsing
 
         private OfcToken CreateToken(OfcTokenType type, [CanBeNull] string data)
         {
-            return new OfcToken(type, data, _tokenLine, _tokenColumn, _currentLength - _tokenLength);
+#if CDUMP
+            Console.WriteLine($"tkn: {type}; x: {_tokenLine}; y: {_tokenColumn}");
+#endif
+            return new OfcToken(type, data, _tokenLine, _tokenColumn, _currentPosition - _tokenPosition);
         }
 
         private void StartToken()
@@ -135,7 +144,7 @@ namespace Ofc.Parsing
             if (!_recordPosition) return;
             _tokenLine = _currentLine;
             _tokenColumn = _currentColumn;
-            _tokenLength = _currentLength;
+            _tokenPosition = _currentPosition;
         }
 
         private char Eat()
@@ -180,7 +189,7 @@ namespace Ofc.Parsing
 
         private void Fill()
         {
-            if (_eos) throw new LexerException();
+            if (_eos) throw Exception(LexerExceptionCodes.UnexpectedEndOfStream);
             if (_length == 0) _position = 0;
             else if (_position != 0) Relocate();
             var difference = _size - _length;
@@ -243,7 +252,7 @@ namespace Ofc.Parsing
         private bool SkipUntil(char[] values)
         {
             if (values.Length == 0) return true;
-            int z = 0, l = values.Length;
+            int z = 0, d = 0, l = values.Length;
             while (!(_eos && _length == 0))
             {
                 if (_length == 0) Fill();
@@ -256,6 +265,8 @@ namespace Ofc.Parsing
                         Skip(i + 1);
                         return true;
                     }
+                    if (z != 0) i = d;
+                    d = i + 1;
                     z = 0;
                 }
                 Reset();
@@ -322,7 +333,7 @@ namespace Ofc.Parsing
             }
         }
 
-        private int EatNumber()
+        private void EatNumber(bool ignoreEmpty)
         {
             // while there are still characters availble
             var amount = 0;
@@ -342,11 +353,12 @@ namespace Ofc.Parsing
                     else
                     {
                         Skip(i); // eat all read chars
-                        return amount; // return the amount of read chars
+                        if (!ignoreEmpty && amount == 0) throw Exception(LexerExceptionCodes.UnexpectedSymbol);
+                        return;
                     }
                 Reset(); // eat all chars in the buffer
             }
-            return amount; // return the amount of read chars
+            if (amount == 0) throw Exception(LexerExceptionCodes.UnexpectedEndOfStream);
         }
 
         private int EatString()
@@ -396,11 +408,11 @@ namespace Ofc.Parsing
                                 Append('\t');
                                 break;
                             default:
-                                throw new LexerException();
+                                throw Exception(LexerExceptionCodes.InvalidEscapeSequence, c);
                         }
                     }
                     else if (c == '\\') escape = true;
-                    else if (c == '\n') throw new LexerException();
+                    else if (c == '\n') throw Exception(LexerExceptionCodes.UnterminatedStringLiteral);
                     else if (c != '"') Append(c); // if the current char matches the Regex add it to the StringBuilder
                     else
                     {
@@ -441,7 +453,7 @@ namespace Ofc.Parsing
                     }
                     if (c == '*') // Handling multi line comment
                     {
-                        if (!SkipUntil(new[] {'*', '/'})) throw new LexerException();
+                        if (!SkipUntil(new[] {'*', '/'})) throw Exception(LexerExceptionCodes.UnterminatedBlockComment);
                         continue;
                     }
                 }
@@ -453,7 +465,7 @@ namespace Ofc.Parsing
                 if (!onlySymbols && c == '#' && Needs(2) && _buffer[_position + 1] == '{')
                 {
                     Skip(2);
-                    if (!EatUntil(new[] {'#', '}'})) throw new LexerException();
+                    if (!EatUntil(new[] {'#', '}'})) throw Exception(LexerExceptionCodes.UnterminatedStringContainer);
                     _symbolOnly = true;
                     return CreateToken(OfcTokenType.STRING, new string(_textBuffer, 0, _textLength));
                 }
@@ -467,7 +479,7 @@ namespace Ofc.Parsing
                 }
 
                 // If the last character was not a symbol, whitespace or comment and this one isn't too -> BAIL!!!
-                if (onlySymbols) throw new LexerException();
+                if (onlySymbols) throw Exception(LexerExceptionCodes.UnexpectedSymbol);
                 _symbolOnly = true;
 
                 // Lexing Numbers reg. -?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)? - for visualization -> json.org
@@ -475,31 +487,31 @@ namespace Ofc.Parsing
                 {
                     Clear();
                     if (c == '-') Append(Eat());
-                    if (!Needs(1)) throw new LexerException();
+                    if (!Needs(1)) throw Exception(LexerExceptionCodes.UnexpectedEndOfStream);
                     c = _buffer[_position];
                     if (c == '0') Append(Eat());
                     else if (c >= '1' && c <= '9')
                     {
                         Append(Eat());
-                        EatNumber();
+                        EatNumber(true);
                     }
-                    else throw new LexerException();
+                    else throw Exception(LexerExceptionCodes.UnexpectedSymbol);
                     if (!Needs(1)) return CreateToken(OfcTokenType.NUMBER, new string(_textBuffer, 0, _textLength));
                     c = _buffer[_position];
                     if (c == '.')
                     {
                         Append(Eat());
-                        if (EatNumber() == 0) throw new LexerException();
+                        EatNumber(false);
                         if (!Needs(1)) return CreateToken(OfcTokenType.NUMBER, new string(_textBuffer, 0, _textLength));
                         c = _buffer[_position];
                     }
                     if (c == 'e' || c == 'E')
                     {
                         Append(Eat());
-                        if (!Needs(1)) throw new LexerException();
+                        if (!Needs(1)) throw Exception(LexerExceptionCodes.UnexpectedEndOfStream);
                         c = _buffer[_position];
                         if (c == '+' || c == '-') Append(Eat());
-                        if (EatNumber() == 0) throw new LexerException();
+                        EatNumber(false);
                     }
 
                     return CreateToken(OfcTokenType.NUMBER, new string(_textBuffer, 0, _textLength));
@@ -510,7 +522,7 @@ namespace Ofc.Parsing
                 {
                     Clear();
                     Skip(1);
-                    if (EatString() == -1) throw new LexerException();
+                    if (EatString() == -1) throw Exception(LexerExceptionCodes.UnexpectedEndOfStream);
                     Skip(1);
                     return CreateToken(OfcTokenType.STRING, new string(_textBuffer, 0, _textLength));
                 }
@@ -544,5 +556,17 @@ namespace Ofc.Parsing
         }
 
         #endregion
+
+        private LexerException Exception(LexerExceptionCodes code, params object[] args)
+        {
+            var e = new LexerException(code, args);
+            if (!_recordPosition) return e;
+            e.HasMoreInformation = true;
+            e.ExceptionLine = _currentLine;
+            e.ExceptionColumn = _currentColumn;
+            e.ReferenceLine = _tokenLine;
+            e.ReferenceColumn = _tokenColumn;
+            return e;
+        }
     }
 }
