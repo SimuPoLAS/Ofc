@@ -1,4 +1,7 @@
-﻿namespace Ofc
+﻿using OfcAlgorithm;
+using OfcAlgorithm.Integration;
+
+namespace Ofc
 {
     using System;
     using System.IO;
@@ -45,46 +48,6 @@
             Console.Write(argumentParser.GenerateHelp());
         }
 
-        private static void CompressFolder(string srcPath, string targetPath)
-        {
-            using (new FileStream(targetPath, FileMode.Create))
-            {
-            }
-            foreach (var file in Directory.GetFiles(srcPath, "*", SearchOption.AllDirectories))
-            {
-                CompressFile(file, targetPath, FileMode.Append);
-            }
-        }
-
-        private static void CompressFile(string srcPath, string targetPath, FileMode mode = FileMode.Create)
-        {
-            using (var str = new FileStream(targetPath, mode))
-            {
-                BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
-                try
-                {
-                    var lexi = new OfcLexer(new FileInputStream(srcPath));
-                    var purser = new OfcParser(lexi, new AlgorithmHook(new BlockyAlgorithm(), str));
-                    purser.Parse();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(srcPath + ": " + ex);
-                }
-            }
-        }
-
-        private static void DecompressFile(string srcPath, string targetPath)
-        {
-            using (var str = new FileStream(srcPath, FileMode.Open))
-            {
-                var item = 0;
-                while (str.Position < str.Length - 1)
-                {
-                    new BlockyAlgorithm().Decompress(null, EmptyConfiguration.Instance, str, new DummyReporter(Path.GetDirectoryName(targetPath) + "\\" + item++ + "." + Path.GetFileName(targetPath)));
-                }
-            }
-        }
 
         internal enum CommandLineLayers
         {

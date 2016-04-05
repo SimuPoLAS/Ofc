@@ -16,11 +16,11 @@ namespace OfcAlgorithm.Blocky.Integration
         public IReporter<OfcNumber> Compress(IFile file, IConfiguaration config, Stream writer, int width, int elements)
         {
             if (width == 1)
-                return new BlockyCompression(elements, writer);
+                return new BlockyCompression(elements, writer, config);
 
             var compressions = new IReporter<OfcNumber>[width];
             for (var i = 0; i < compressions.Length; i++)
-                compressions[i] = new BlockyCompression(elements, writer);
+                compressions[i] = new BlockyCompression(elements, writer, config);
             return new CompressionSplitter(compressions);
         }
 

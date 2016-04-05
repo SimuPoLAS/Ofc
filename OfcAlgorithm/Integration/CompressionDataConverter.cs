@@ -1,24 +1,25 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using JetBrains.Annotations;
 using OfcCore;
 
 namespace OfcAlgorithm.Integration
 {
     public class CompressionDataConverter : IConverter<OfcNumber>
     {
-        public void Write(BinaryWriter writer, OfcNumber data)
+        public void Write([NotNull]BinaryWriter writer, OfcNumber data)
         {
             writer.Write(data);
         }
 
 
-        public void Write(Stream writer, OfcNumber value)
+        public void Write([NotNull]Stream writer, OfcNumber value)
         {
             writer.Write(BitConverter.GetBytes(value.Reconstructed), 0, 8);
         }
 
-        public OfcNumber Read(Stream reader)
+        public OfcNumber Read([NotNull]Stream reader)
         {
             throw new NotImplementedException(); // todo needs a rewrite
         }

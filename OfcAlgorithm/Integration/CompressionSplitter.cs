@@ -1,4 +1,6 @@
-﻿namespace OfcAlgorithm.Integration
+﻿using JetBrains.Annotations;
+
+namespace OfcAlgorithm.Integration
 {
     using System;
     using OfcCore;
@@ -12,7 +14,7 @@
         private int _numberIndex;
         private readonly int _count;
 
-        public CompressionSplitter(IReporter<OfcNumber>[] blockyCompressions)
+        public CompressionSplitter([NotNull]IReporter<OfcNumber>[] blockyCompressions)
         {
             _blockyCompressions = blockyCompressions;
             _count = blockyCompressions.Length;
@@ -56,11 +58,6 @@
             {
                 Report(numbers[i]);
             }
-        }
-
-        public void ReportAll(OfcNumber[] values)
-        {
-            Report(values, 0, values.Length);
         }
 
         public void Dispose()

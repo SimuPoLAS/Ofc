@@ -1,4 +1,6 @@
-﻿namespace OfcCore
+﻿using System;
+
+namespace OfcCore
 {
     using JetBrains.Annotations;
 
@@ -15,6 +17,6 @@
         /// <param name="name">The name of the configuration element which should be retrieved.</param>
         /// <returns>The configuration item as the specified type. Or <c>null</c> if the element does not exist or the element could not be cast.</returns>
         [CanBeNull]
-        public static T Get<T>(this IConfiguaration configuaration, string name) where T : class => configuaration[name] as T;
+        public static T Get<T>(this IConfiguaration configuaration, string name) => (T)Convert.ChangeType(configuaration[name], typeof(T));
     }
 }

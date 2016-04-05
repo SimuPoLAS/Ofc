@@ -52,11 +52,6 @@
             }
         }
 
-        public void ReportAll(OfcNumber[] values)
-        {
-            Report(values, 0, values.Length);
-        }
-
         public void Dispose()
         {
             FileStream.Dispose();
