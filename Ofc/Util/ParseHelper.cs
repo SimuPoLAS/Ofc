@@ -1,6 +1,7 @@
 ﻿using Ofc.Parsing.Hooks;
 using OfcAlgorithm.Blocky.Integration;
 using OfcAlgorithm.Integration.Dummy;
+using OfcAlgorithm.Rounding;
 using OfcCore.Configurations;
 
 namespace Ofc.Util
@@ -71,7 +72,32 @@ namespace Ofc.Util
                 try
                 {
                     var lexi = new OfcLexer(new FileInputStream(srcPath));
-                    var purser = new OfcParser(lexi, new AlgorithmHook(new BlockyAlgorithm(), str));
+                    var purser = new OfcParser(lexi, new AlgorithmHook(new BlockyAlgorithm(), str, EmptyConfiguration.Instance));
+                    purser.Parse();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(srcPath + ": " + ex);
+                }
+            }
+        }
+
+        private static void CompressFileBlockyWithRounding(string srcPath, string targetPath, double min, double max, double epsilon, FileMode mode = FileMode.Create)
+        {
+            var config = new SimpleConfiguration
+            {
+                ["RoundingMin"] = min,
+                ["RoundingMax"] = max,
+                ["RoundingEpsilon"] = epsilon
+            };
+
+            using (var str = new FileStream(targetPath, mode))
+            {
+                BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
+                try
+                {
+                    var lexi = new OfcLexer(new FileInputStream(srcPath));
+                    var purser = new OfcParser(lexi, new AlgorithmHook(new RounderAlgorithm(new BlockyAlgorithm()), str, config));
                     purser.Parse();
                 }
                 catch (Exception ex)

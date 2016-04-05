@@ -11,12 +11,14 @@
     {
         private readonly IAlgorithm<OfcNumber> _algorithm;
         private readonly Stream _output;
+        private readonly IConfiguaration _config;
         private IReporter<OfcNumber> _compress;
 
-        public AlgorithmHook(IAlgorithm<OfcNumber> algorithm, Stream output)
+        public AlgorithmHook(IAlgorithm<OfcNumber> algorithm, Stream output, IConfiguaration config)
         {
             _algorithm = algorithm;
             _output = output;
+            _config = config;
         }
 
 
@@ -48,7 +50,7 @@
         {
             if (_compress != null) throw new NotSupportedException();
 
-            _compress = _algorithm.Compress(null, EmptyConfiguration.Instance, _output, (int) type, capacity);
+            _compress = _algorithm.Compress(null, _config, _output, (int) type, capacity);
         }
 
         public void HandleListEntry(string value)
