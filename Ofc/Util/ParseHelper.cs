@@ -53,7 +53,7 @@ namespace Ofc.Util
             return a;
         }
 
-        private static void CompressFolderBlocky(string srcPath, string targetPath)
+        internal static void CompressFolderBlocky(string srcPath, string targetPath)
         {
             using (new FileStream(targetPath, FileMode.Create))
             {
@@ -64,7 +64,18 @@ namespace Ofc.Util
             }
         }
 
-        private static void CompressFileBlocky(string srcPath, string targetPath, FileMode mode = FileMode.Create)
+        internal static void CompressFolderBlockyWithRounding(string srcPath, string targetPath, double min, double max, double epsilon)
+        {
+            using (new FileStream(targetPath, FileMode.Create))
+            {
+            }
+            foreach (var file in Directory.GetFiles(srcPath, "*", SearchOption.AllDirectories))
+            {
+                CompressFileBlockyWithRounding(file, targetPath, min, max, epsilon, FileMode.Append);
+            }
+        }
+
+        internal static void CompressFileBlocky(string srcPath, string targetPath, FileMode mode = FileMode.Create)
         {
             using (var str = new FileStream(targetPath, mode))
             {
@@ -77,12 +88,12 @@ namespace Ofc.Util
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(srcPath + ": " + ex);
+                    Console.WriteLine(srcPath + " " + ex.Message + " " + ex.GetType().Name + " " + ex.StackTrace);
                 }
             }
         }
 
-        private static void CompressFileBlockyWithRounding(string srcPath, string targetPath, double min, double max, double epsilon, FileMode mode = FileMode.Create)
+        internal static void CompressFileBlockyWithRounding(string srcPath, string targetPath, double min, double max, double epsilon, FileMode mode = FileMode.Create)
         {
             var config = new SimpleConfiguration
             {
@@ -100,14 +111,14 @@ namespace Ofc.Util
                     var purser = new OfcParser(lexi, new AlgorithmHook(new RounderAlgorithm(new BlockyAlgorithm()), str, config));
                     purser.Parse();
                 }
-                catch (Exception ex)
+                catch (Exception ex) 
                 {
                     Console.WriteLine(srcPath + ": " + ex);
                 }
             }
         }
 
-        private static void DecompressFileBlocky(string srcPath, string targetPath)
+        internal static void DecompressFileBlocky(string srcPath, string targetPath)
         {
             using (var str = new FileStream(srcPath, FileMode.Open))
             {
