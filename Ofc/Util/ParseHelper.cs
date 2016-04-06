@@ -18,10 +18,12 @@ namespace Ofc.Util
         {
             if (target == null) throw new ArgumentNullException(nameof(target));
             if (!File.Exists(target)) throw new FileNotFoundException("Could not find the specified file.", target);
-            var stream = new FileInputStream(target);
-            var lexer = new OfcLexer(stream, true);
-            var parser = new OfcParser(lexer, hook);
-            parser.Parse();
+            using (var stream = new FileInputStream(target))
+            {
+                var lexer = new OfcLexer(stream, true);
+                var parser = new OfcParser(lexer, hook);
+                parser.Parse();
+            }
         }
 
         internal static bool TryParseFile(string target, [CanBeNull] IParserHook<string> hook)

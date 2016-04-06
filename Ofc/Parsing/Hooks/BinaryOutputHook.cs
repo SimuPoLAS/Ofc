@@ -6,147 +6,135 @@ namespace Ofc.Parsing.Hooks
     using System;
     using System.IO;
     using System.Text;
-    using JetBrains.Annotations;
     using Ofc.IO;
-    using Ofc.IO.Handlers;
     using Ofc.Util;
     using OfcCore;
     using OfcCore.Configurations;
 
-    internal class BinaryOutputHook<T> : IParserHook<string>
+    internal class BinaryOutputHook<T> : IParserHook<string>, IDisposable
     {
-        private const double EPSILON = 0.000001;
-
-        internal const int G_GENERAL = 0, G_LIST = 1, G_KEYWORD = 2, G_STRING = 3, G_DIRECTIVE = 6, G_DIMENSION = 7;
-
         private IDataWriter _writer;
         private IAlgorithm<T> _algorithm;
-        private bool _hasAlgorithm;
         private IConverter<T> _converter;
         private Encoding _encoding;
 
-        private IFile _target;
-        private IConfiguaration _configuaration = EmptyConfiguration.Instance;
-
-        private IHandler<string> _listHandler;
-        private bool _inList;
+        private IReporter<T> _reporter;
+        private bool _listOpen = false;
 
 
-        public BinaryOutputHook(string output, [CanBeNull] IAlgorithm<T> algorithm, [CanBeNull] IConverter<T> converter)
+        public BinaryOutputHook(Stream output, IAlgorithm<T> algorithm, IConverter<T> converter)
         {
+            _writer = new BinaryDataWriter(output);
             _algorithm = algorithm;
-            _hasAlgorithm = algorithm != null;
-            if (_hasAlgorithm && _converter == null) throw new ArgumentNullException(nameof(converter));
             _converter = converter;
             _encoding = new UTF8Encoding();
-            OpenFile(output);
         }
 
-
-        private void OpenFile(string target)
-        {
-            if (!File.Exists(target)) throw new FileNotFoundException("Could not find the specified file.", target);
-            FileStream stream = null;
-            try
-            {
-                stream = new FileStream(target, FileMode.Create);
-                _writer = new BinaryDataWriter(stream);
-            }
-            catch (Exception)
-            {
-                stream?.Dispose();
-                throw;
-            }
-        }
 
 
         public void EnterDictionary(string name)
         {
-            _writer.WriteId(G_GENERAL, 2);
+            if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
+            _writer.WriteByte(1);
+            _writer.WriteString(name);
         }
 
         public void LeaveDictionary()
         {
-            _writer.WriteId(G_GENERAL, 0);
+            if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
+            _writer.WriteByte(0);
         }
 
         public void EnterCodeStreamDictionary(string name)
         {
-            _writer.WriteId(G_GENERAL, 3);
+            if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
+            _writer.WriteByte(2);
+            _writer.WriteString(name);
         }
 
         public void LeaveCodeStreamDictionary()
         {
-            _writer.WriteId(G_GENERAL, 0);
+            if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
+            _writer.WriteByte(0);
         }
 
         public void EnterEntry(string name)
         {
-            _writer.WriteId(G_GENERAL, 4);
+            if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
+            _writer.WriteByte(3);
         }
 
         public void LeaveEntry()
         {
-            _writer.WriteId(G_GENERAL, 0);
+            if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
+            _writer.WriteByte(0);
         }
 
         public void EnterList(OfcListType type, int capacity)
         {
-            if (_inList) throw new NotSupportedException("Stacking not supported.");
-            _inList = true;
-            if (!_hasAlgorithm) _listHandler = new RawListHandler(_writer);
-            else
+            if (_listOpen) throw new NotSupportedException("Does not support list stacking.");
+            _listOpen = true;
+            switch (type)
             {
-                switch (type)
-                {
-                    case OfcListType.Scalar:
-
-                        break;
-                    case OfcListType.Vector:
-
-                        break;
-                    case OfcListType.Tensor:
-
-                        break;
-                    case OfcListType.Anonymous:
-                        throw new NotSupportedException();
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(type), type, null);
-                }
+                case OfcListType.Scalar:
+                    _writer.WriteByte(4);
+                    _reporter = _algorithm.Compress(null, EmptyConfiguration.Instance, _writer.BaseStream, 1, capacity);
+                    break;
+                case OfcListType.Vector:
+                    _writer.WriteByte(5);
+                    _reporter = _algorithm.Compress(null, EmptyConfiguration.Instance, _writer.BaseStream, 3, capacity);
+                    break;
+                case OfcListType.Tensor:
+                    _writer.WriteByte(6);
+                    _reporter = _algorithm.Compress(null, EmptyConfiguration.Instance, _writer.BaseStream, 9, capacity);
+                    break;
+                case OfcListType.Anonymous:
+                    _writer.WriteByte(7);
+                    _reporter = _algorithm.Compress(null, EmptyConfiguration.Instance, _writer.BaseStream, 1, capacity);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
-            
         }
 
         public void HandleListEntry(string value)
         {
-            if (!_inList) throw new NotSupportedException();
-            _listHandler.HandleEntry(value);
+            if (!_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
+            _reporter.Report(_converter.FromString(value));
         }
 
         public void HandleListEntries(string[] values)
         {
-            if (!_inList) throw new NotSupportedException();
-            _listHandler.HandleEntries(values, 0, values.Length);
+            if (!_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
+            for (var i = 0; i < values.Length; i++)
+                _reporter.Report(_converter.FromString(values[i]));
         }
 
         public void LeaveList()
         {
-            if (!_inList) throw new InvalidOperationException("No list is opened.");
-            _listHandler.End();
+            if (!_listOpen) throw new InvalidOperationException("A list is not opend.");
+            _reporter.Finish();
+            _reporter.Dispose();
+            _reporter = null;
+            _listOpen = false;
         }
 
-        public void HandleMacro(OfcMacroType macro, [CanBeNull] string data)
+        public void HandleMacro(OfcMacroType macro, string data)
         {
+            if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
             switch (macro)
             {
                 case OfcMacroType.Include:
-                    _writer.WriteId(G_DIRECTIVE, 0);
+                    _writer.WriteByte(8);
+                    _writer.WriteString(data);
                     break;
                 case OfcMacroType.InputMode:
-                    _writer.WriteId(G_DIRECTIVE, 1);
+                    _writer.WriteByte(9);
+                    _writer.WriteString(data);
                     break;
                 case OfcMacroType.Remove:
-                    _writer.WriteId(G_DIRECTIVE, 2);
+                    _writer.WriteByte(10);
+                    _writer.WriteString(data);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(macro), macro, null);
@@ -155,132 +143,44 @@ namespace Ofc.Parsing.Hooks
 
         public void HandleDimension(string[] values)
         {
-            if (values == null || values.Length != 7) throw new ArgumentException();
-            var t = values[0];
-            var same = true;
-            for (var i = 1; i < values.Length; i++)
-                if (t != values[i])
-                {
-                    same = false;
-                    break;
-                }
-            if (same)
-            {
-                _writer.WriteDouble(double.Parse(t));
-                return;
-            }
+            if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
+            _writer.WriteByte(11);
             for (var i = 0; i < values.Length; i++)
-            {
-                double value;
-                if (!double.TryParse(values[i], out value)) throw new ArgumentException();
-                _writer.WriteDouble(value);
-            }
+                _converter.Write(_writer.BaseStream, _converter.FromString(values[i]));
         }
 
         public void HandleScalar(string value)
         {
-            double number;
-            if (!double.TryParse(value, out number)) throw new ArgumentException();
-            var isInt = number%1 < EPSILON;
-            if (!isInt)
+            if (_listOpen)
             {
-                _writer.WriteId(G_GENERAL, 7);
-                _writer.WriteDouble(number);
+                HandleListEntry(value);
+                return;
             }
-            else
-            {
-                var intValue = (long) number;
-                var neg = intValue < 0;
-                _writer.WriteId(G_GENERAL, neg ? 9 : 8);
-                _writer.WriteVarLong(neg ? ~intValue : intValue);
-            }
+            _writer.WriteByte(12);
+            _converter.Write(_writer.BaseStream, _converter.FromString(value));
         }
 
         public void HandleKeyword(string value)
         {
-            var bytes = _encoding.GetBytes(value);
-            var l = bytes.Length;
-
-            // special case empty keyword
-            if (l == 0)
-            {
-                _writer.WriteId(G_KEYWORD, 0);
-                return;
-            }
-
-            // test for same bytes over and over
-            var t = bytes[0];
-            var same = true;
-            for (var i = 1; i < l; i++)
-                if (t != bytes[i])
-                {
-                    same = false;
-                    break;
-                }
-
-            // special case small keyword
-            if (l <= 12)
-            {
-                _writer.WriteId(G_KEYWORD, l + 3);
-                if (same) _writer.WriteByte(t);
-                else _writer.WriteBytes(bytes);
-                return;
-            }
-
-            // any other case: length index up front
-            var needed = NumberHelper.NeededBytes(l);
-            if (needed <= 0) throw new NotSupportedException();
-            if (needed > 2) throw new ArgumentException("The specified keyword is too big.");
-            _writer.WriteId(G_KEYWORD, needed + 1);
-            _writer.Write(BitConverter.GetBytes(needed), 0, needed);
-            if (same) _writer.WriteByte(t);
-            else _writer.WriteBytes(bytes);
+            if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
+            _writer.WriteByte(13);
+            _writer.WriteString(value);
         }
 
         public void HandleString(string data)
         {
-            var bytes = _encoding.GetBytes(data);
-            var l = bytes.Length;
-
-            // special case empty string
-            if (l == 0)
-            {
-                _writer.WriteId(G_STRING, 0);
-                return;
-            }
-
-            // test for same bytes over and over
-            var t = bytes[0];
-            var same = true;
-            for (var i = 1; i < l; i++)
-                if (t != bytes[i])
-                {
-                    same = false;
-                    break;
-                }
-
-            // special case small string
-            if (l <= 12)
-            {
-                _writer.WriteId(G_STRING, l + 3);
-                if (same) _writer.WriteByte(t);
-                else _writer.WriteBytes(bytes);
-                return;
-            }
-
-            // any other case: length index up front
-            var needed = NumberHelper.NeededBytes(l);
-            if (needed <= 0) throw new NotSupportedException();
-            if (needed > 2) throw new ArgumentException("The specified keyword is too big.");
-            _writer.WriteId(G_STRING, needed + 1);
-            _writer.Write(BitConverter.GetBytes(needed), 0, needed);
-            if (same) _writer.WriteByte(t);
-            else _writer.WriteBytes(bytes);
+            if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
+            _writer.WriteByte(14);
+            _writer.WriteString(data);
         }
 
         public void Flush()
         {
-            _writer.Flush();
+            _reporter?.Flush();
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

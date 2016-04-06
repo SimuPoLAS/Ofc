@@ -68,7 +68,7 @@ namespace OfcCore.Utility
         public void Dispose()
         {
             Flush();
-            Stream.Dispose(); //Bug
+            //Stream.Dispose(); //Bug
         }
     }
 }

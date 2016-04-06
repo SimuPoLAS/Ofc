@@ -1,6 +1,7 @@
 ﻿namespace Ofc.Util
 {
     using System;
+    using System.Text;
     using Ofc.IO;
 
     internal static class Extentions
@@ -13,6 +14,13 @@
         internal static void WriteId(this IDataWriter writer, bool same, int primary, int secondary)
         {
             writer.WriteByte((byte)((same ? 0x80 : 0x00) | ((primary & 0x7) << 4) | (secondary & 0xF)));
+        }
+
+        internal static void WriteString(this IDataWriter writer, string value)
+        {
+            var buffer = Encoding.UTF8.GetBytes(value);
+            writer.WriteVarInt(buffer.Length);
+            writer.WriteBytes(buffer);
         }
 
         internal static void WriteVarInt(this IDataWriter writer, int value)
@@ -29,6 +37,13 @@
             for (; v >= 0x80; v >>= 7)
                 writer.WriteByte((byte)(v | 0x80));
             writer.WriteByte((byte)v);
+        }
+
+        internal static string ReadString(this IDataReader reader)
+        {
+            var length = reader.ReadVarInt();
+            var buffer = reader.ReadBytes(length);
+            return Encoding.UTF8.GetString(buffer);
         }
 
         internal static int ReadVarInt(this IDataReader reader)
