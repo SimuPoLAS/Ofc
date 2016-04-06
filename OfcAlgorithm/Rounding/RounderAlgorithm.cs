@@ -11,7 +11,9 @@ namespace OfcAlgorithm.Rounding
 {
     public class RounderAlgorithm : IAlgorithm<OfcNumber>
     {
+        private readonly Stream _stream;
         private readonly IAlgorithm<OfcNumber> _embeddedAlgorithm;
+        private readonly bool _routeMode;
 
         public string Id => _embeddedAlgorithm.Id;
         public string Name => _embeddedAlgorithm.Name;
@@ -20,6 +22,13 @@ namespace OfcAlgorithm.Rounding
         public RounderAlgorithm([NotNull]IAlgorithm<OfcNumber> embeddedAlgorithm)
         {
             _embeddedAlgorithm = embeddedAlgorithm;
+            _routeMode = true;
+        }
+
+        public RounderAlgorithm([NotNull]Stream stream)
+        {
+            _stream = stream;
+            _routeMode = false;
         }
 
         public bool SupportsDimension(int width, int height)
@@ -29,7 +38,9 @@ namespace OfcAlgorithm.Rounding
 
         public IReporter<OfcNumber> Compress(IFile target, IConfiguaration configuaration, Stream output, int width, int height)
         {
-            return new RounderReporter(_embeddedAlgorithm.Compress(target, configuaration, output, width, height), configuaration);
+            if (_routeMode)
+                return new RounderReporter(_embeddedAlgorithm.Compress(target, configuaration, output, width, height), configuaration);
+            return new RounderReporter(_stream, configuaration);
         }
 
         public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<OfcNumber> reporter)

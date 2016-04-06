@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -14,6 +16,8 @@ namespace OfcAlgorithm.Rounding
         private readonly IReporter<OfcNumber> _nextReporter;
         public IConfiguaration Configuaration { get; }
         private readonly List<OfcNumber> _numbers = new List<OfcNumber>(); //Todo: needs estimate for capacity argument! 
+        private readonly Stream _outStream;
+        private readonly bool _routeMode;
 
         /// <summary>
         /// A reporter that rounds the numbers given to him, and gives them to the next reporter
@@ -24,6 +28,14 @@ namespace OfcAlgorithm.Rounding
         {
             _nextReporter = nextReporter;
             Configuaration = config;
+            _routeMode = true;
+        }
+
+        public RounderReporter([NotNull] Stream outStream, [NotNull]IConfiguaration config)
+        {
+            _outStream = outStream;
+            Configuaration = config;
+            _routeMode = false;
         }
 
         public void Dispose()
@@ -34,8 +46,22 @@ namespace OfcAlgorithm.Rounding
         public void Finish()
         {
             Rounder.Round(_numbers, Configuaration);
-            _nextReporter.Report(_numbers.ToArray(), 0, _numbers.Count);
-            _nextReporter.Finish();
+            if (_routeMode)
+            {
+                _nextReporter.Report(_numbers.ToArray(), 0, _numbers.Count);
+                _nextReporter.Finish();
+            }
+            else
+            {
+                //Todo: write in format
+                //Debug
+                var writer = new StreamWriter(_outStream);
+                for (var i = 0; i < _numbers.Count; i++)
+                {
+                    writer.WriteLine(_numbers[i].Reconstructed);
+                }
+               writer.Flush();
+            }
         }
 
         public void Flush()
