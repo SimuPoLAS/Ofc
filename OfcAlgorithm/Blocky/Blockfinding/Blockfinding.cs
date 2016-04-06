@@ -16,24 +16,85 @@ using OfcAlgorithm.Integration;
 
 namespace OfcAlgorithm.Blocky.Blockfinding
 {
+    /// <summary>
+    /// Finds Blocks in OfcNumbers
+    /// </summary>
     class Blockfinding
     {
+        /// <summary>
+        /// The given numbers
+        /// </summary>
         public readonly List<OfcNumber> Values;
-        public readonly int ValueCount;
-        public readonly BlockyMetadata Metadata;
-        public readonly HeaderSizes Headers;
-        public bool IsDone => _index >= ValueCount;
 
-        private int _index;
+        /// <summary>
+        /// The count of the numbers. Evaluated once, for performance reasons
+        /// </summary>
+        public readonly int ValueCount;
+
+        /// <summary>
+        /// Metadata about the numbers, such as the needed bits to write the biggest number, ...
+        /// </summary>
+        public readonly BlockyMetadata Metadata;
+
+        /// <summary>
+        /// Calculates the sizes of various block headers. Calculated once for performance reasons
+        /// </summary>
+        public readonly HeaderSizes Headers;
+
+        /// <summary>
+        /// The found blocks
+        /// </summary>
         private readonly List<Block> _blocks = new List<Block>();
+
+
+        /// <summary>
+        /// The index of the value that is being worked on
+        /// </summary>
+        private int _index;
+
+        /// <summary>
+        /// The last created block, within a calculation as he could still expand
+        /// </summary>
         private BlockCalculation _appendingCalculation;
+
+        /// <summary>
+        /// How good the current block is in saving
+        /// </summary>
         private int _appendingCalculationSavingGrade;
+
+        /// <summary>
+        /// The last block that had a positive bitDiff
+        /// </summary>
         private Block _lastStableBlock;
+
+        /// <summary>
+        /// If values can still be appended to the last created block
+        /// </summary>
         private bool _isAppendingCalculationValid;
+
+        /// <summary>
+        /// All potential blocks
+        /// </summary>
         private readonly List<BlockCalculation> _calculations = new List<BlockCalculation>();
+
+        /// <summary>
+        /// All potential blocks that would alter the current block
+        /// </summary>
         private readonly BlockReplacingCalculation[] _replacingCalculations = new BlockReplacingCalculation[Enum.GetValues(typeof(Block.SavingGrade)).Length];
+
+        /// <summary>
+        /// Predicts patterns (e.g: Values can be expressed as a linear function)
+        /// </summary>
         private readonly PatternPredictor _patternPredictor;
+
+        /// <summary>
+        /// If there is a potential block that uses patterns
+        /// </summary>
         private bool _hasRunningPatternCalculation;
+
+        /// <summary>
+        /// All initialized compression modules
+        /// </summary>
         private readonly CompressionMethod[] _initializedCompressionMethods = new CompressionMethod[(int)Methods.Count];
 
 #if DEBUG
@@ -80,7 +141,10 @@ namespace OfcAlgorithm.Blocky.Blockfinding
 #endif
 
 
-
+        /// <summary>
+        /// Iterates all values to find all blocks
+        /// </summary>
+        /// <returns>the found blocks</returns>
         public List<Block> FindAllBlocks()
         {
             while (ProcessNextValue())
@@ -207,7 +271,7 @@ namespace OfcAlgorithm.Blocky.Blockfinding
         }
 
         /// <summary>
-        /// Only use this for debug purposes!
+        /// Gets the first found block that contains the given index
         /// </summary>
         /// <param name="index"></param>
         /// <param name="blocks"></param>
@@ -218,7 +282,7 @@ namespace OfcAlgorithm.Blocky.Blockfinding
         }
 
         /// <summary>
-        /// Only use this for debug purposes!
+        /// Returns of the given index is in any block
         /// </summary>
         /// <param name="index"></param>
         /// <param name="blocks"></param>
@@ -228,13 +292,19 @@ namespace OfcAlgorithm.Blocky.Blockfinding
             return blocks.Any(block => block.Index <= index && block.Index + block.Length > index);
         }
 
+        /// <summary>
+        /// Returns the first potential block that contains a value at the given index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="blocks"></param>
+        /// <returns></returns>
         private BlockCalculation GetCalcAtIndex(int index, IEnumerable<BlockCalculation> blocks)
         {
             return blocks.FirstOrDefault(block => block.VirtualBlock.Index == index);
         }
 
         /// <summary>
-        /// Only use this for debug purposes!
+        /// Gets the first block that starts at the given index
         /// </summary>
         /// <param name="index"></param>
         /// <param name="blocks"></param>
@@ -256,11 +326,17 @@ namespace OfcAlgorithm.Blocky.Blockfinding
             Count
         }
 
+        /// <param name="method"></param>
+        /// <returns>The requested initialized module</returns>
         public CompressionMethod GetInitializedMethod(Methods method)
         {
             return _initializedCompressionMethods[(int)method];
         }
 
+        /// <summary>
+        /// Creates a block from a potentual block, and sets it as current block
+        /// </summary>
+        /// <param name="calc"></param>
         private void AddNewBlock(BlockCalculation calc)
         {
             _lastStableBlock = calc.VirtualBlock;
@@ -275,6 +351,10 @@ namespace OfcAlgorithm.Blocky.Blockfinding
             }
         }
 
+        /// <summary>
+        /// Replaces the current block with a potentual block
+        /// </summary>
+        /// <param name="with"></param>
         private void ReplaceNewestBlock(BlockCalculation with)
         {
             _blocks[_blocks.Count - 1] = with.VirtualBlock;
@@ -284,6 +364,12 @@ namespace OfcAlgorithm.Blocky.Blockfinding
             _appendingCalculationSavingGrade = (int)with.VirtualBlock.GetSavingGrade();
         }
 
+        /// <summary>
+        /// Evaluate if any of the potentual blocks could replace the current block in the future. If yes, then it will move the block to the "potentual replacing blocks"
+        /// </summary>
+        /// <param name="oldConcurrent"></param>
+        /// <param name="oldConcurrentSavedBits"></param>
+        /// <param name="exclude"></param>
         private void TransformCalcsToReplaceCalsOrDelete(Block oldConcurrent, int oldConcurrentSavedBits, int exclude = -1)
         {
             //Bug: we shouldn't mindlessly remove all calculations, because if there is a calc will less nb that would have been created soon, it might be better than this one in the long run
@@ -305,6 +391,11 @@ namespace OfcAlgorithm.Blocky.Blockfinding
             _calculations.Clear();
         }
 
+        /// <summary>
+        /// Updates the potentual blocks that could replace the current block
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="bitDiffDiff"></param>
         private void UpdateReplacingCalculations(ref OfcNumber value, int bitDiffDiff = 0)
         {
             // ReSharper disable once ForCanBeConvertedToForeach
@@ -358,6 +449,10 @@ namespace OfcAlgorithm.Blocky.Blockfinding
             }
         }
 
+        /// <summary>
+        /// Does one step. Will update everything
+        /// </summary>
+        /// <returns></returns>
         public bool ProcessNextValue()
         {
             var value = Values[_index];
