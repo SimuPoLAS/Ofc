@@ -1,7 +1,11 @@
 ﻿namespace OfcAlgorithm.Blocky.Blockfinding
 {
+    /// <summary>
+    /// Pre-calculates the sizes of various (block) headers
+    /// </summary>
     class HeaderSizes
     {
+        // Common Block headers
         public const int GlobalExponentNb = 4;
         public const int GlobalNumberNb = 6;
         public const int GlobalIsAbsolute = 1;
@@ -13,12 +17,14 @@
         public const int BlockOverrideGlobalNb = 1;
         public const int BlockLength = 8;
 
+        // Global headers
         public readonly int GlobalIsAbsoluteNegative;
         public readonly int BlockIsAbsolute;
         public readonly int BlockIsAbsoluteNegative;
         public readonly int BlockOverriddenNb;
         public readonly int BlockExponent;
 
+        // Special block headers
         public readonly int StandardBlockHeader;
         public readonly int StandardBlockFloatSimmilar;
         public readonly int StandardBlockNumbersNoExp;
@@ -27,11 +33,7 @@
         public readonly int StandardBlockPatternSame;
         public readonly int StandardBlockPatternPingPong;
 
-        /// <summary>
-        /// Note: the compression needs to have its gloabl vars set - aka it needs to have all values added!
-        /// All Values of the class are in bits!
-        /// </summary>
-        /// <param name="metadata"></param>
+        
         public HeaderSizes(BlockyMetadata metadata)
         {
             GlobalIsAbsoluteNegative = metadata.IsAbsolute ? 1 : 0;
