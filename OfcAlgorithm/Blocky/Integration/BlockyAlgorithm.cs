@@ -16,15 +16,6 @@ namespace OfcAlgorithm.Blocky.Integration
 
         public Version Version => new Version(0, 1);
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="config"></param>
-        /// <param name="writer"></param>
-        /// <param name="width"></param>
-        /// <param name="elements"></param>
-        /// <returns></returns>
         public IReporter<OfcNumber> Compress(IFile file, IConfiguaration config, Stream writer, int width, int elements)
         {
             if (width == 1)
@@ -49,7 +40,7 @@ namespace OfcAlgorithm.Blocky.Integration
 
         public static void SetBlockfindingDebugConsoleEnabled(bool enabled)
         {
-#if DEBUG
+#if DEBUG //Todo: Also compile on release, make debug console an option in the args parser
             Blockfinding.Blockfinding.SetDebugEnabled(enabled);
 #endif
         }

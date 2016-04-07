@@ -4,6 +4,9 @@ using OfcCore.Utility;
 
 namespace OfcAlgorithm.Blocky.Method.PatternSame
 {
+    /// <summary>
+    /// The same value all the time. Could be expressed as linear function, but the header of this is smaller ...
+    /// </summary>
     class PatternSameCompression : CompressionMethod
     {
         public PatternSameCompression(Blockfinding.Blockfinding context) : base(context)

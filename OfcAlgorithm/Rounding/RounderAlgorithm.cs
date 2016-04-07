@@ -9,6 +9,9 @@ using OfcCore;
 
 namespace OfcAlgorithm.Rounding
 {
+    /// <summary>
+    /// Just rounding numbers with the Rounder. Basically returns a RoundingReporter, and is able to pass the rounded numbers to the next algorithm
+    /// </summary>
     public class RounderAlgorithm : IAlgorithm<OfcNumber>
     {
         private readonly Stream _stream;

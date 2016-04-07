@@ -101,7 +101,7 @@ namespace OfcAlgorithm.Blocky
             if (HasPattern)
             {
                 return SavingGrade.Pattern;
-            }
+            } // Note: removed NoExpSmallNum due to low real-world occurences
             return HasExponent ? SavingGrade.Exp : SavingGrade.NoExp;
         }
 
@@ -110,9 +110,7 @@ namespace OfcAlgorithm.Blocky
             return metadata.MaxNeededBitsNeededBitsNumber < (metadata.MaxNeededBitsNumber - NeededBits) * Length && !HasPattern;
         }
 
-        /// <summary>
-        /// (Btw: This will set OverrideGlobalNb but not the NeededBits :P)
-        /// </summary>
+        /// <remarks>This will set OverrideGlobalNb but not the NeededBits</remarks>
         /// <param name="metadata"></param>
         /// <param name="newNb"></param>
         /// <returns>The bit difference that would occur when changing the NeededBits in the header to newNb</returns>

@@ -45,13 +45,13 @@ namespace OfcAlgorithm.Blocky
             var valueCount = 0;
             while (valueCount < _metadata.ValueCount)
             {
-                if (_bitReader.ReadByte(1) > 0)
+                if (_bitReader.ReadByte(1) > 0) // isBlock
                 {
                     var block = DecompressionMethod.ReadDefaultBlockHeader(_bitReader, _metadata);
-                    var method = GetMethodForBlock(block);
-                    ((DummyReporter)_writer).FileStream.WriteLine(method.GetType().Name + " Start");
+                    var method = GetMethodForBlock(block); // Get decompressor class for block type
+                    //((DummyReporter)_writer).FileStream.WriteLine(method.GetType().Name + " Start");
                     valueCount += method.Read(this, block, _bitReader);
-                    ((DummyReporter)_writer).FileStream.WriteLine(method.GetType().Name + " End");
+                    //((DummyReporter)_writer).FileStream.WriteLine(method.GetType().Name + " End");
                 }
                 else
                 {

@@ -12,7 +12,7 @@ namespace OfcAlgorithm.Huffman
         /// This is a collector class, you pass it all the numbers that exist so it can create an efficient huffman writer
         /// </summary>
         /// <param name="size"></param>
-        public HuffmanCreator(ushort size)
+        public HuffmanCreator(ushort size) // Bug: not the most efficient huffman form!! Todo
         {
             OccurenceCount = new int[size];
             _offset = (short)(size / 2);

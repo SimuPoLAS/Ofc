@@ -39,12 +39,11 @@ namespace OfcAlgorithm.Blocky
             Blocks = new List<Block>();
         }
 
-
+        #region SupportsLayers is set to false ... (Todo)
         public void Flush()
         {
             throw new NotImplementedException();
         }
-
 
         public void PushLayer(int capacity)
         {
@@ -55,6 +54,7 @@ namespace OfcAlgorithm.Blocky
         {
             throw new NotImplementedException();
         }
+        #endregion
 
         /// <summary>
         /// Adds a number to the list of values that will be compressed. It will also analyze the number and change some global headers based on the result, so only add numbers through here!

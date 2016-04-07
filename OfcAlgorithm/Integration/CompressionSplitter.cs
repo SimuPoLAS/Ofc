@@ -6,9 +6,14 @@ namespace OfcAlgorithm.Integration
     using OfcCore;
     using OfcCore.Configurations;
 
+    /// <summary>
+    /// Example: Used for splitting a list of vectors into three seperate lists
+    /// </summary>
     internal class CompressionSplitter : IReporter<OfcNumber>
     {
         public IConfiguaration Configuaration { get; } = new SimpleConfiguration();
+        public int Layers { get; }
+        public bool SupportsLayer { get; }
 
         private readonly IReporter<OfcNumber>[] _blockyCompressions;
         private int _numberIndex;
@@ -20,8 +25,7 @@ namespace OfcAlgorithm.Integration
             _count = blockyCompressions.Length;
         }
 
-        public int Layers { get; }
-        public bool SupportsLayer { get; }
+
 
         public void Finish()
         {

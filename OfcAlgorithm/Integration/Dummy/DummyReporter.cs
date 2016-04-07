@@ -6,6 +6,8 @@
     using OfcCore;
     using OfcCore.Configurations;
 
+    // This class was used for debugging purposes, when the parser wasn't quite ready. Sometimes still used
+    [Obsolete]
     public class DummyReporter : IReporter<OfcNumber>
     {
         public IConfiguaration Configuaration { get; } = new SimpleConfiguration();

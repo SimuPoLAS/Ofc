@@ -158,6 +158,10 @@ namespace OfcAlgorithm.Blocky.Blockfinding
         }
 
 #if DEBUG
+        /// <summary>
+        /// The debug console, displays (potentual) Blocks
+        /// </summary>
+        /// <param name="viewCount"></param>
         public void ViewStateDebug(int viewCount = 35)
         {
             if (!_debugEnabled) return;

@@ -103,7 +103,11 @@ namespace OfcAlgorithm.Integration
             return first;
         }
 
-
+        /// <summary>
+        /// Mantissa + Mantissa, Exponent + Exponent
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns>The resulting OfcNumber</returns>
         public OfcNumber AddEach(OfcNumber other)
         {
             var num = this;
@@ -112,6 +116,11 @@ namespace OfcAlgorithm.Integration
             return num;
         }
 
+        /// <summary>
+        /// Mantissa - Mantissa, Exponent - Exponent
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns>The resulting OfcNumber</returns>
         public OfcNumber SubtractEach(OfcNumber other)
         {
             var num = this;
@@ -120,10 +129,11 @@ namespace OfcAlgorithm.Integration
             return num;
         }
 
-        public double SubtractGetDouble(OfcNumber num2) => Reconstructed - num2.Reconstructed;
-
-        public double AddGetDouble(OfcNumber num2) => Reconstructed + num2.Reconstructed;
-
+        /// <summary>
+        /// Mantissa * num, Exponent * num
+        /// </summary>
+        /// <param name="num">factor</param>
+        /// <returns>The resulting OfcNumber</returns>
         public OfcNumber LinearMultiplyEach(int num)
         {
             var res = this;

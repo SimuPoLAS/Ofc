@@ -5,6 +5,9 @@ using OfcCore.Utility;
 
 namespace OfcAlgorithm.Blocky.Method.PatternPingPong
 {
+    /// <summary>
+    /// 111000111000111000111000111000
+    /// </summary>
     class PatternPingPongCompression : CompressionMethod
     {
         public readonly List<PatternPingPongMetadata> PingPongPatternLengths = new List<PatternPingPongMetadata>(); // Index = n'th. pingping block, value = length until value changes
@@ -29,6 +32,7 @@ namespace OfcAlgorithm.Blocky.Method.PatternPingPong
         public override bool ProcessValue(ref Block block, OfcNumber value, int index, ref int bitDiff)
         {
             throw new InvalidOperationException("The PingPong pattern should not be processing values, as it is created in post-compression optimisation. This CompressionMethod is just for writing!");
+            //todo: Dirty!
             //if (value.Exponent != 0)
             //    return false;
 
@@ -48,7 +52,7 @@ namespace OfcAlgorithm.Blocky.Method.PatternPingPong
             //    || patternDiff == 0 && patternTurnDiff == 0)
             ////|| (block.Pattern == Block.PatternType.Increasing && patternDiff != 1))
             //{
-            //    if (index - block.Index >= byte.MaxValue) return false; //Todo: maybe count occurence and alter block header size
+            //    if (index - block.Index >= byte.MaxValue) return false; 
             //    var nb = block.NeededBits;
             //    block.NeededBits = 0; // the nb per value if we still had the pattern
             //    bitDiff += block.DifferenceWithNb(Compression, ref nb) - 2; // -2 because now we have no "Pattern" option

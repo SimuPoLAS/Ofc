@@ -4,6 +4,9 @@ using OfcCore.Utility;
 
 namespace OfcAlgorithm.Blocky.Method.FloatSimmilar
 {
+    /// <summary>
+    /// Numbers with the same exponent
+    /// </summary>
     class FloatSimmilarCompression : CompressionMethod
     {
 
@@ -103,7 +106,7 @@ namespace OfcAlgorithm.Blocky.Method.FloatSimmilar
             return true;
         }
 
-        public override void Write(StreamBitWriter writer, Block block, ref int valueIndex) //Todo: this method is redundant: same as NoExp
+        public override void Write(StreamBitWriter writer, Block block, ref int valueIndex) //Todo: this method is redundant: same as NoExp. Need more common methods
         {
             WriteDefaultBlockHeader(writer, block);
 

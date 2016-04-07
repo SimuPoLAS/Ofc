@@ -8,17 +8,53 @@ namespace OfcAlgorithm.Blocky
 {
     class BlockyMetadata
     {
+        /// <summary>
+        /// How much values there are
+        /// </summary>
         public int ValueCount;
+
+        /// <summary>
+        /// How much bits you need to be able to represent every value
+        /// </summary>
         public byte MaxNeededBitsNumber;
+
+        /// <summary>
+        /// Needed bits for the needed bits number
+        /// </summary>
         public byte MaxNeededBitsNeededBitsNumber;
+
+        /// <summary>
+        /// How much bits you need to be able to represent every exponent
+        /// </summary>
         public byte MaxNeededBitsExponent;
+
+        /// <summary>
+        /// If all values have the same sign
+        /// </summary>
         public bool IsAbsolute;
+
+        /// <summary>
+        /// If the absolute sign is negative
+        /// </summary>
         public bool IsNegative;
+
+        /// <summary>
+        /// If no value has an exponent
+        /// </summary>
         public bool NoExponent;
+
+        /// <summary>
+        /// The largest possible value with the set needed bits
+        /// </summary>
         public ulong LargestPossibleValue;
 
         protected BlockyMetadata() { }
 
+        /// <summary>
+        /// Reads the metadata in its binary form
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         public static BlockyMetadata FromBitStream(StreamBitReader reader)
         {
             var metadata = new BlockyMetadata { ValueCount = (int)reader.Read(31) };
@@ -32,6 +68,11 @@ namespace OfcAlgorithm.Blocky
             return metadata;
         }
 
+        /// <summary>
+        /// Calculates the metadata from the given values
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns></returns>
         public static BlockyMetadata FromData(List<OfcNumber> values)
         {
             if(values.Count == 0) throw new InvalidOperationException("Cannot gather compression metadata with 0 values!");
@@ -50,6 +91,11 @@ namespace OfcAlgorithm.Blocky
             return metadata;
         }
 
+
+        /// <summary>
+        /// Writes the metadata in binary form
+        /// </summary>
+        /// <param name="writer"></param>
         public void Write(StreamBitWriter writer)
         {
             writer.Write((ulong)ValueCount, 31);

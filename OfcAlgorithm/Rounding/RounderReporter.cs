@@ -11,6 +11,9 @@ using OfcCore.Configurations;
 
 namespace OfcAlgorithm.Rounding
 {
+    /// <summary>
+    /// A reporter that rounds the numbers given to him (with the Rounder class), and gives them to the next reporter
+    /// </summary>
     public class RounderReporter : IReporter<OfcNumber>
     {
         private readonly IReporter<OfcNumber> _nextReporter;
@@ -19,11 +22,6 @@ namespace OfcAlgorithm.Rounding
         private readonly Stream _outStream;
         private readonly bool _routeMode;
 
-        /// <summary>
-        /// A reporter that rounds the numbers given to him, and gives them to the next reporter
-        /// </summary>
-        /// <param name="nextReporter"></param>
-        /// <param name="config"></param>
         public RounderReporter([NotNull] IReporter<OfcNumber> nextReporter, [NotNull]IConfiguaration config)
         {
             _nextReporter = nextReporter;

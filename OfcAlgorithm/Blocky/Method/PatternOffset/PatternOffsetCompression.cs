@@ -4,6 +4,9 @@ using OfcCore.Utility;
 
 namespace OfcAlgorithm.Blocky.Method.PatternOffset
 {
+    /// <summary>
+    /// A linear function pattern
+    /// </summary>
     class PatternOffsetCompression : CompressionMethod
     {
         public PatternOffsetCompression(Blockfinding.Blockfinding context) : base(context)

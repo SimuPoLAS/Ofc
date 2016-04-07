@@ -54,7 +54,7 @@ namespace OfcAlgorithm.Blocky.Method
             if (!Context.Metadata.IsAbsolute)
                 writer.WriteByte(value.IsNegative ? (byte)1 : (byte)0, 1);
             writer.Write((ulong)Math.Abs(value.Number), Context.Metadata.MaxNeededBitsNumber);
-            writer.WriteByte(value.Exponent < 0 ? (byte)1 : (byte)0, 1);
+            writer.WriteByte(value.Exponent < 0 ? (byte)1 : (byte)0, 1); // Bug: potentually writing exponent even though NoExp is set to true
             writer.Write((ushort)Math.Abs(value.Exponent), Context.Metadata.MaxNeededBitsExponent);
         }
     }

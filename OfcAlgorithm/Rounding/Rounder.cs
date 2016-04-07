@@ -14,6 +14,11 @@ namespace OfcAlgorithm.Rounding
 {
     public static class Rounder
     {
+        /// <summary>
+        /// Readjusts the numbers so that they are easier to compress. Loses some precision (of course)
+        /// </summary>
+        /// <param name="numbers"></param>
+        /// <param name="config"></param>
         public static void Round([NotNull]List<OfcNumber> numbers, [NotNull]IConfiguaration config)
         {
             if (numbers.Count < 2) return;
@@ -82,6 +87,14 @@ namespace OfcAlgorithm.Rounding
             //}
         }
 
+        /// <summary>
+        /// Sets all values in the given List within the range from index to index2 to currentMax - epsilonOfc
+        /// </summary>
+        /// <param name="numbers"></param>
+        /// <param name="index"></param>
+        /// <param name="index2"></param>
+        /// <param name="currentMax"></param>
+        /// <param name="epsilonOfc"></param>
         private static void AdjustNumbers(List<OfcNumber> numbers, int index, int index2, OfcNumber currentMax, OfcNumber epsilonOfc)
         {
             var allNum = currentMax - epsilonOfc;

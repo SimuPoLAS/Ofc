@@ -43,6 +43,12 @@ namespace OfcAlgorithm.Blocky.Method
             return block;
         }
 
+        /// <summary>
+        /// Reads a Single Value from its binary representation without the control bit (isBlock)
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="metadata"></param>
+        /// <returns></returns>
         public static OfcNumber ReadSingleValueWithoutControlBit(StreamBitReader reader, BlockyMetadata metadata)
         {
             var value = new OfcNumber();
@@ -50,7 +56,7 @@ namespace OfcAlgorithm.Blocky.Method
                 value.IsNegative = reader.ReadByte(1) > 0;
             value.Number = (long)reader.Read(metadata.MaxNeededBitsNumber);
             var isExpNegative = reader.ReadByte(1) > 0;
-            value.Exponent = (short)reader.Read(metadata.MaxNeededBitsExponent);
+            value.Exponent = (short)reader.Read(metadata.MaxNeededBitsExponent); // Bug: Potentually reading exp even though NoExp is set. Same in writing method! (Ineffizient)
             if (isExpNegative)
                 value.Exponent *= -1;
             return value;
