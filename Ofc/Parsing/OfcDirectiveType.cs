@@ -3,7 +3,7 @@
     /// <summary>
     ///     Represents all types of directive.
     /// </summary>
-    internal enum OfcMacroType
+    internal enum OfcDirectiveType
     {
         /// <summary>
         ///     Represents the include directive.

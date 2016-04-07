@@ -24,7 +24,7 @@
 
         void HandleString(string value);
 
-        void HandleDirective(OfcMacroType macro, [CanBeNull] string data);
+        void HandleDirective(OfcDirectiveType directive, [CanBeNull] string data);
 
         void HandleDimension(double[] values);
 

@@ -119,25 +119,25 @@ namespace Ofc.Parsing.Hooks
             _listOpen = false;
         }
 
-        public void HandleMacro(OfcMacroType macro, string data)
+        public void HandleMacro(OfcDirectiveType directive, string data)
         {
             if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
-            switch (macro)
+            switch (directive)
             {
-                case OfcMacroType.Include:
+                case OfcDirectiveType.Include:
                     _writer.WriteByte(8);
                     _writer.WriteString(data);
                     break;
-                case OfcMacroType.InputMode:
+                case OfcDirectiveType.InputMode:
                     _writer.WriteByte(9);
                     _writer.WriteString(data);
                     break;
-                case OfcMacroType.Remove:
+                case OfcDirectiveType.Remove:
                     _writer.WriteByte(10);
                     _writer.WriteString(data);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(macro), macro, null);
+                    throw new ArgumentOutOfRangeException(nameof(directive), directive, null);
             }
         }
 

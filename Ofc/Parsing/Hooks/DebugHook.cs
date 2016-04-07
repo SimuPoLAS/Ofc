@@ -69,9 +69,9 @@
         }
 
 
-        public void HandleMacro(OfcMacroType macro, string data)
+        public void HandleMacro(OfcDirectiveType directive, string data)
         {
-            Console.WriteLine($"#{macro} {$"\"{data}\""}");
+            Console.WriteLine($"#{directive} {$"\"{data}\""}");
         }
 
         public void HandleDimension(T[] values)

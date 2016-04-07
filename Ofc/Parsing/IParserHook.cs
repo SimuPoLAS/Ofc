@@ -25,7 +25,7 @@
         void LeaveList();
 
 
-        void HandleMacro(OfcMacroType macro, [CanBeNull] string data);
+        void HandleMacro(OfcDirectiveType directive, [CanBeNull] string data);
 
         void HandleDimension(T[] values);
 

@@ -73,7 +73,7 @@
             _compress = null;
         }
 
-        public void HandleMacro(OfcMacroType macro, string data)
+        public void HandleMacro(OfcDirectiveType directive, string data)
         {
         }
 

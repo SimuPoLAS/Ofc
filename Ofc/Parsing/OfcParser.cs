@@ -273,17 +273,17 @@ namespace Ofc.Parsing
             Skip();
             Expect(OfcTokenType.STRING);
             var macro = _buffer[_position].Payload;
-            OfcMacroType type;
+            OfcDirectiveType type;
             switch (macro)
             {
                 case "include":
-                    type = OfcMacroType.Include;
+                    type = OfcDirectiveType.Include;
                     break;
                 case "inputMode":
-                    type = OfcMacroType.InputMode;
+                    type = OfcDirectiveType.InputMode;
                     break;
                 case "remove":
-                    type = OfcMacroType.Remove;
+                    type = OfcDirectiveType.Remove;
                     break;
                 default:
                     throw new ParserException();
