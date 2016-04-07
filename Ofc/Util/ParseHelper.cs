@@ -68,6 +68,7 @@ namespace Ofc.Util
 
         internal static void CompressFolderBlockyWithRounding(string srcPath, string targetPath, double min, double max, double epsilon)
         {
+            BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
             using (new FileStream(targetPath, FileMode.Create))
             {
             }
@@ -90,7 +91,7 @@ namespace Ofc.Util
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(srcPath + " " + ex.Message + " " + ex.GetType().Name + " " + ex.StackTrace);
+                    Console.WriteLine(srcPath + ": " + ex);
                 }
             }
         }
@@ -106,14 +107,13 @@ namespace Ofc.Util
 
             using (var str = new FileStream(targetPath, mode))
             {
-                BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
                 try
                 {
                     var lexi = new OfcLexer(new FileInputStream(srcPath));
                     var purser = new OfcParser(lexi, new AlgorithmHook(new RounderAlgorithm(new BlockyAlgorithm()), str, config));
                     purser.Parse();
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     Console.WriteLine(srcPath + ": " + ex);
                 }

@@ -5,10 +5,17 @@ using OfcAlgorithm.Integration;
 
 namespace OfcAlgorithm.Blocky.Blockfinding
 {
+    /// <summary>
+    /// Predicts special patterns in values
+    /// </summary>
     class PatternPredictor
     {
-        private readonly List<OfcNumber> _values;
+        /// <summary>
+        /// The index of the current value
+        /// </summary>
         public int Index;
+
+        private readonly List<OfcNumber> _values;
         private readonly int _limit;
 
         /// <summary>
