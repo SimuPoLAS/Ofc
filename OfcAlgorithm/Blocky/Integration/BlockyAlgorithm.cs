@@ -5,6 +5,9 @@ using OfcCore;
 
 namespace OfcAlgorithm.Blocky.Integration
 {
+    /// <summary>
+    /// Implemented the IAlgorithm so that the parser can access algorithm functions
+    /// </summary>
     public class BlockyAlgorithm : IAlgorithm<OfcNumber>
     {
         public string Id => "BLKY";
@@ -13,6 +16,15 @@ namespace OfcAlgorithm.Blocky.Integration
 
         public Version Version => new Version(0, 1);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="config"></param>
+        /// <param name="writer"></param>
+        /// <param name="width"></param>
+        /// <param name="elements"></param>
+        /// <returns></returns>
         public IReporter<OfcNumber> Compress(IFile file, IConfiguaration config, Stream writer, int width, int elements)
         {
             if (width == 1)

@@ -2,6 +2,7 @@
   "profiles": {
     "run": {
       "commandName": "run",
+      "commandLineArgs": "compress C:\\damBreak4phase_wp8 out.compressed.bin",
       "workingDirectory": "bin"
     }
   }
