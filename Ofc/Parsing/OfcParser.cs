@@ -136,7 +136,7 @@ namespace Ofc.Parsing
                 {
                     Skip(2);
                     double a;
-                    if (!double.TryParse(tkn.Text, out a)) ParseAnonymousList();
+                    if (!double.TryParse(tkn.Payload, out a)) ParseAnonymousList();
                     else ParseAnonymousList((int) a);
                     continue;
                 }
@@ -175,7 +175,7 @@ namespace Ofc.Parsing
 
         private void ParseObject(OfcToken me)
         {
-            _hook.EnterDictionary(me.Text ?? string.Empty);
+            _hook.EnterDictionary(me.Payload ?? string.Empty);
             while (!(_eos && _length == 0))
             {
                 if (!Needs(1)) throw new ParserException();
@@ -211,12 +211,12 @@ namespace Ofc.Parsing
         private void ParseCodeStreamObject(OfcToken me)
         {
             if (!Expect(OfcTokenType.KEYWORD)) throw new ParserException();
-            var text = _buffer[_position].Text;
+            var text = _buffer[_position].Payload;
             if (text != "codeStream") throw new ParserException();
             Skip(1);
             if (!Expect(OfcTokenType.BRACES_OPEN)) throw new ParserException();
             Skip(1);
-            _hook.EnterCodeStreamDictionary(me.Text ?? string.Empty);
+            _hook.EnterCodeStreamDictionary(me.Payload ?? string.Empty);
             while (!(_eos && _length == 0))
             {
                 if (!Needs(1)) throw new ParserException();
@@ -251,7 +251,7 @@ namespace Ofc.Parsing
 
         private void ParseEntry(OfcToken me)
         {
-            _hook.EnterEntry(me.Text ?? string.Empty);
+            _hook.EnterEntry(me.Payload ?? string.Empty);
             while (!(_eos && _length == 0))
             {
                 if (!Needs(1)) throw new ParserException();
@@ -272,7 +272,7 @@ namespace Ofc.Parsing
             if (_buffer[_position].Type != OfcTokenType.HASHTAG) throw new ParserException();
             Skip();
             Expect(OfcTokenType.STRING);
-            var macro = _buffer[_position].Text;
+            var macro = _buffer[_position].Payload;
             OfcMacroType type;
             switch (macro)
             {
@@ -291,7 +291,7 @@ namespace Ofc.Parsing
             Skip();
             Ensure(1);
             if (_buffer[_position].Type != OfcTokenType.KEYWORD && _buffer[_position].Type != OfcTokenType.STRING) throw new ParserException();
-            _hook.HandleMacro(type, _buffer[_position].Text);
+            _hook.HandleMacro(type, _buffer[_position].Payload);
             Skip();
         }
 
@@ -300,11 +300,11 @@ namespace Ofc.Parsing
             switch (me.Type)
             {
                 case OfcTokenType.KEYWORD:
-                    if (me.Text == "List")
+                    if (me.Payload == "List")
                     {
                         Skip(1);
                         if (!Expect(new[] {OfcTokenType.CHEVRONS_OPEN, OfcTokenType.KEYWORD, OfcTokenType.CHEVRONS_CLOSE})) throw new ParserException();
-                        var ltype = _buffer[_position + 1].Text;
+                        var ltype = _buffer[_position + 1].Payload;
                         OfcListType type;
                         switch (ltype)
                         {
@@ -326,7 +326,7 @@ namespace Ofc.Parsing
                         var c = _buffer[_position];
                         if (c.Type == OfcTokenType.NUMBER)
                         {
-                            amount = (int) double.Parse(c.Text);
+                            amount = (int) double.Parse(c.Payload);
                             Skip(1);
                         }
                         if (!Expect(OfcTokenType.PARENTHESE_OPEN)) throw new ParserException();
@@ -364,31 +364,31 @@ namespace Ofc.Parsing
                     }
 
                     Skip(1);
-                    _hook.HandleKeyword(me.Text ?? string.Empty);
+                    _hook.HandleKeyword(me.Payload ?? string.Empty);
                     return;
                 case OfcTokenType.NUMBER:
                     if (Needs(2) && _buffer[_position + 1].Type == OfcTokenType.PARENTHESE_OPEN)
                     {
                         Skip(2);
                         double a;
-                        if (!double.TryParse(me.Text, out a)) ParseAnonymousList();
+                        if (!double.TryParse(me.Payload, out a)) ParseAnonymousList();
                         else ParseAnonymousList((int) a);
                         return;
                     }
 
                     Skip(1);
-                    _hook.HandleScalar(me.Text);
+                    _hook.HandleScalar(me.Payload);
                     return;
                 case OfcTokenType.STRING:
                     Skip(1);
-                    _hook.HandleString(me.Text ?? string.Empty);
+                    _hook.HandleString(me.Payload ?? string.Empty);
                     return;
                 case OfcTokenType.BRACKETS_OPEN:
                     Skip(1);
                     if (!Expect(new[] {OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.BRACKETS_CLOSE})) throw new ParserException();
                     var values = new string[7];
                     for (var i = 0; i < 7; i++)
-                        values[i] = _buffer[_position + i].Text;
+                        values[i] = _buffer[_position + i].Payload;
                     Skip(8);
                     _hook.HandleDimension(values);
                     return;
@@ -423,7 +423,7 @@ namespace Ofc.Parsing
         private void ParseScalar()
         {
             if (!Expect(OfcTokenType.NUMBER)) throw new ParserException();
-            _hook.HandleListEntry(_buffer[_position].Text ?? string.Empty);
+            _hook.HandleListEntry(_buffer[_position].Payload ?? string.Empty);
             Skip(1);
         }
 
@@ -432,7 +432,7 @@ namespace Ofc.Parsing
             if (!Expect(new[] {OfcTokenType.PARENTHESE_OPEN, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.PARENTHESE_CLOSE})) throw new ParserException();
             var values = new string[3];
             for (var i = 0; i < 3; i++)
-                values[i] = _buffer[_position + i + 1].Text ?? string.Empty;
+                values[i] = _buffer[_position + i + 1].Payload ?? string.Empty;
             _hook.HandleListEntries(values);
             Skip(5);
         }
@@ -442,7 +442,7 @@ namespace Ofc.Parsing
             if (!Expect(new[] {OfcTokenType.PARENTHESE_OPEN, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.PARENTHESE_CLOSE})) throw new ParserException();
             var values = new string[9];
             for (var i = 0; i < 9; i++)
-                values[i] = _buffer[_position + i + 1].Text ?? string.Empty;
+                values[i] = _buffer[_position + i + 1].Payload ?? string.Empty;
             _hook.HandleListEntries(values);
             Skip(11);
         }
