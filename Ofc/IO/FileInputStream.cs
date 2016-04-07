@@ -26,6 +26,11 @@
             else _reader = null;
         }
 
+        public FileInputStream(TextReader reader)
+        {
+            _reader = reader;
+        }
+
         public int Read(char[] buffer, int offset, int count)
         {
             return _reader?.Read(buffer, offset, count) ?? 0;
@@ -33,7 +38,7 @@
 
         public void Dispose()
         {
-            _reader.Dispose();
+            _reader?.Dispose();
         }
     }
 }
