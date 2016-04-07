@@ -10,10 +10,21 @@
     using OfcAlgorithm.Blocky.Integration;
     using OfcAlgorithm.Integration;
 
-    internal class Program
+    /// <summary>
+    ///     Contains the main entrypoint for the application and the all the CLI functionality.
+    /// </summary>
+    internal static class Program
     {
+        /// <summary>
+        ///     Place where all the logs will be stored.
+        /// </summary>
         private const string Logs = "logs/";
 
+
+        /// <summary>
+        ///     Main entrypoint for the application.
+        /// </summary>
+        /// <param name="args"></param>
         public static void Main(string[] args)
         {
             /* COMPRESSING A DRIECTORY
@@ -82,36 +93,36 @@
                 Console.Write(" > ");
                 var result = argumentParser.Parse(Console.ReadLine() ?? "");
 #else
-                var result = argumentParser.Parse(args);
+            var result = argumentParser.Parse(args);
 #endif
 
-                var ok = false;
-                // check if the parser succeeded 
-                if (result.Success)
+            var ok = false;
+            // check if the parser succeeded 
+            if (result.Success)
+            {
+                ok = true;
+                switch (result.LayerId)
                 {
-                    ok = true;
-                    switch (result.LayerId)
-                    {
-                        case CommandLineLayers.Help:
-                            Console.Write(argumentParser.GenerateHelp());
-                            break;
-                        case CommandLineLayers.Version:
-                            Console.WriteLine($"{argumentParser.Name} [v1.0.000]");
-                            break;
+                    case CommandLineLayers.Help:
+                        Console.Write(argumentParser.GenerateHelp());
+                        break;
+                    case CommandLineLayers.Version:
+                        Console.WriteLine($"{argumentParser.Name} [v1.0.000]");
+                        break;
 
-                        case CommandLineLayers.Compress:
-                            Compress(result[0], result[1], result['c'], result['f']);
-                            Console.WriteLine();
-                            break;
-                    }
+                    case CommandLineLayers.Compress:
+                        Compress(result[0], result[1], result['c'], result['f']);
+                        Console.WriteLine();
+                        break;
                 }
+            }
 
-                // Write an error message
-                if (!ok)
-                {
-                    Console.WriteLine("Invalid arguments.\n");
-                    Console.Write(argumentParser.GenerateHelp());
-                }
+            // Write an error message
+            if (!ok)
+            {
+                Console.WriteLine("Invalid arguments.\n");
+                Console.Write(argumentParser.GenerateHelp());
+            }
 
 #if DBGIN
                 Console.ReadLine();
@@ -122,6 +133,13 @@
 #endif
         }
 
+        /// <summary>
+        ///     Compresses the specified file or directory and saves the output under the specified path.
+        /// </summary>
+        /// <param name="input">Input file or directory.</param>
+        /// <param name="output">Output file or directory.</param>
+        /// <param name="console">When <c>true</c> the logging output will be written to console.</param>
+        /// <param name="force">When <c>true</c> Force mode is active.</param>
         private static void Compress(string input, [CanBeNull] string output, bool console, bool force)
         {
             if (string.IsNullOrWhiteSpace(input)) throw new ArgumentException();
@@ -333,11 +351,33 @@
         }
 
 
+        /// <summary>
+        ///     Represents a layer in the argument parser.
+        /// </summary>
         internal enum CommandLineLayers
         {
+            /// <summary>
+            ///     The Help layer.
+            /// </summary>
+            /// <remarks>
+            ///     ofc.exe [-h|--help]
+            /// </remarks>
             Help,
+
+            /// <summary>
+            ///     The Version layer.
+            /// </summary>
+            /// <remarks>
+            ///     ofc.exe [--version]
+            /// </remarks>
             Version,
 
+            /// <summary>
+            ///     The Compress layer.
+            /// </summary>
+            /// <remarks>
+            ///     ofc.exe compress &lt;input&gt; [output] [-c] [-f]
+            /// </remarks>
             Compress
         }
     }
