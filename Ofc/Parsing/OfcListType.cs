@@ -9,6 +9,11 @@
     internal enum OfcListType
     {
         /// <summary>
+        /// Represents a list of any value.
+        /// </summary>
+        Anonymous = 0,
+
+        /// <summary>
         /// Represents a list of scalar values.
         /// </summary>
         Scalar = 1,
@@ -21,11 +26,6 @@
         /// <summary>
         /// Represents a list of tensor values.
         /// </summary>
-        Tensor = 9,
-        
-        /// <summary>
-        /// Represents a list of any value.
-        /// </summary>
-        Anonymous
+        Tensor = 9
     }
 }
