@@ -62,6 +62,7 @@ namespace Ofc.Parsing.Hooks
         {
             if (_listOpen) throw new NotSupportedException("Can not write a non list element tag when inside of a list.");
             _writer.WriteByte(3);
+            _writer.WriteString(name);
         }
 
         public void LeaveEntry()
