@@ -29,7 +29,7 @@ namespace Ofc
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
-            //*
+            /*
             BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
             using (var output = File.CreateText("outp"))
             {
