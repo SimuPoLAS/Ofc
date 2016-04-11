@@ -83,6 +83,7 @@
         public void LeaveList()
         {
             if (!_inList) return;
+            _reporter.Finish();
             CompressedDataSections.Add(new CompressedSection(_start, PositionProvider.Position));
             _inList = false;
         }

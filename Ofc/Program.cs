@@ -247,17 +247,22 @@ namespace Ofc
                     try
                     {
                         // create a hook which will handle the internal constructs
-                        using (var hook = new BinaryOutputHook<OfcNumber>(stream, algorithm, converter))
+                        var hook = new MarerHook<OfcNumber>(algorithm, converter, stream);
+                        using (var file = new FileInputStream(input.FullName))
                         {
-                            // open input stream
-                            using (var istream = new FileInputStream(input.OpenText()))
+                            var lexer = new OfcLexer(file);
+                            var parser = new OfcParser(lexer, hook);
+                            hook.PositionProvider = parser;
+                            parser.Parse();
+                        }
+
+                        // create the data file
+                        using (var reader = File.OpenText(input.FullName))
+                        {
+                            using (var ostream = File.CreateText(output.FullName + ".dat"))
                             {
-                                // create a lexer
-                                var lexer = new OfcLexer(istream);
-                                // create a parser on top of the lexer
-                                var parser = new OfcParser(lexer, hook);
-                                // parse the file
-                                parser.Parse();
+                                using (var writer = new MarerWriter(reader, ostream, hook.CompressedDataSections))
+                                    writer.Do();
                             }
                         }
                     }
