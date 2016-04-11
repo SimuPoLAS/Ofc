@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace OfcCore.Utility
 {
@@ -17,12 +18,17 @@ namespace OfcCore.Utility
 
         public ulong Read(byte count)
         {
+            if (_offset == 8)
+            {
+                _buffer = (byte)_stream.ReadByte();
+                _offset = 0;
+            }
             ulong data = 0;
             var offset = 0;
             do
             {
                 var bitsLeft = 8 - _offset;
-                if (bitsLeft > count)
+                if (bitsLeft >= count)
                 {
                     data |= (_buffer & Utility.SectionMasks[count]) << offset;
                     _offset += count;
@@ -38,6 +44,7 @@ namespace OfcCore.Utility
             return data;
         }
 
+        [Obsolete]
         public byte ReadByte(byte count)
         {
             return (byte)Read(count);
