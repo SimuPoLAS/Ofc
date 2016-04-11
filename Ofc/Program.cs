@@ -1,4 +1,5 @@
-﻿#define DBGIN
+﻿
+#define DBGIN
 
 namespace Ofc
 {
@@ -112,33 +113,33 @@ namespace Ofc
             var result = argumentParser.Parse(args);
 #endif
 
-            var ok = false;
-            // check if the parser succeeded 
-            if (result.Success)
-            {
-                ok = true;
-                switch (result.LayerId)
+                var ok = false;
+                // check if the parser succeeded 
+                if (result.Success)
                 {
-                    case CommandLineLayers.Help:
-                        Console.Write(argumentParser.GenerateHelp());
-                        break;
-                    case CommandLineLayers.Version:
-                        Console.WriteLine($"{argumentParser.Name} [v1.0.000]");
-                        break;
+                    ok = true;
+                    switch (result.LayerId)
+                    {
+                        case CommandLineLayers.Help:
+                            Console.Write(argumentParser.GenerateHelp());
+                            break;
+                        case CommandLineLayers.Version:
+                            Console.WriteLine($"{argumentParser.Name} [v1.0.000]");
+                            break;
 
-                    case CommandLineLayers.Compress:
-                        Compress(result[0], result[1], result['c'], result['f']);
-                        Console.WriteLine();
-                        break;
+                        case CommandLineLayers.Compress:
+                            Compress(result[0], result[1], result['c'], result['f']);
+                            Console.WriteLine();
+                            break;
+                    }
                 }
-            }
 
-            // Write an error message
-            if (!ok)
-            {
-                Console.WriteLine("Invalid arguments.\n");
-                Console.Write(argumentParser.GenerateHelp());
-            }
+                // Write an error message
+                if (!ok)
+                {
+                    Console.WriteLine("Invalid arguments.\n");
+                    Console.Write(argumentParser.GenerateHelp());
+                }
 
 #if DBGIN
                 Console.ReadLine();
