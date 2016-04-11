@@ -29,7 +29,8 @@ namespace OfcAlgorithm.Integration
             Number = Math.Abs(number);
             Exponent = exponent;
             NeededBitsNumber = Number.GetNeededBits();
-            NeededBitsExponent = Utility.GetNeededBits(Exponent);
+            NeededBitsExponent = Utility.GetNeededBits(Math.Abs(Exponent));
+            //RecalculateMetadata();
         }
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace OfcAlgorithm.Integration
             IsNegative = Number < 0;
             Number = Math.Abs(Number);
             NeededBitsNumber = Number.GetNeededBits();
-            NeededBitsExponent = Utility.GetNeededBits(Exponent);
+            NeededBitsExponent = Utility.GetNeededBits(Math.Abs(Exponent));
         }
 
         public static OfcNumber Parse(string value)
