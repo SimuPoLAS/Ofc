@@ -1,5 +1,7 @@
 ﻿#define DBGIN
 
+using Ofc.Util;
+
 namespace Ofc
 {
     using System;
@@ -29,6 +31,13 @@ namespace Ofc
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
+            ParseHelper.CompressFileBlocky(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\alpha1", @"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\alpha1.bin2");
+            ParseHelper.DecompressFileBlocky(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\alpha1.bin2", @"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\alpha1.txt");
+            return;
+            ParseHelper.CompressFolderBlockyWithRounding(@"C:\damBreak4phase_wp8", @"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\target.bin", 0d, double.MaxValue, 1e-2);
+            LZMA.Core.Helper.Helper.CompressLzma(File.Open(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\target.bin", FileMode.Open), File.Open(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\target.bin.lzma", FileMode.Create));
+            LZMA.Core.Helper.Helper.DecompressFileLzma(File.Open(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\target.bin.lzma", FileMode.Open), File.Open(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\target.bin.recon", FileMode.Create));
+
             /*
             BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
             using (var output = File.CreateText("outp"))
@@ -112,33 +121,33 @@ namespace Ofc
             var result = argumentParser.Parse(args);
 #endif
 
-            var ok = false;
-            // check if the parser succeeded 
-            if (result.Success)
-            {
-                ok = true;
-                switch (result.LayerId)
+                var ok = false;
+                // check if the parser succeeded 
+                if (result.Success)
                 {
-                    case CommandLineLayers.Help:
-                        Console.Write(argumentParser.GenerateHelp());
-                        break;
-                    case CommandLineLayers.Version:
-                        Console.WriteLine($"{argumentParser.Name} [v1.0.000]");
-                        break;
+                    ok = true;
+                    switch (result.LayerId)
+                    {
+                        case CommandLineLayers.Help:
+                            Console.Write(argumentParser.GenerateHelp());
+                            break;
+                        case CommandLineLayers.Version:
+                            Console.WriteLine($"{argumentParser.Name} [v1.0.000]");
+                            break;
 
-                    case CommandLineLayers.Compress:
-                        Compress(result[0], result[1], result['c'], result['f']);
-                        Console.WriteLine();
-                        break;
+                        case CommandLineLayers.Compress:
+                            Compress(result[0], result[1], result['c'], result['f']);
+                            Console.WriteLine();
+                            break;
+                    }
                 }
-            }
 
-            // Write an error message
-            if (!ok)
-            {
-                Console.WriteLine("Invalid arguments.\n");
-                Console.Write(argumentParser.GenerateHelp());
-            }
+                // Write an error message
+                if (!ok)
+                {
+                    Console.WriteLine("Invalid arguments.\n");
+                    Console.Write(argumentParser.GenerateHelp());
+                }
 
 #if DBGIN
                 Console.ReadLine();
@@ -260,7 +269,7 @@ namespace Ofc
                             }
                         }
                     }
-                        // catch an error from the lexer
+                    // catch an error from the lexer
                     catch (LexerException ex)
                     {
                         log.WriteLine("Error while reading the file. [lexing failed]");
@@ -268,7 +277,7 @@ namespace Ofc
                         log.WriteLine(ex);
                         return false;
                     }
-                        // catch an error from the parser
+                    // catch an error from the parser
                     catch (ParserException ex)
                     {
                         log.WriteLine("Error while reading the file. [parsing failed]");
@@ -276,7 +285,7 @@ namespace Ofc
                         log.WriteLine(ex);
                         return false;
                     }
-                        // catch any other error while the parsing happens
+                    // catch any other error while the parsing happens
                     catch (Exception ex)
                     {
                         log.WriteLine("Error while reading the file. [unknown]");
@@ -286,7 +295,7 @@ namespace Ofc
                     }
                 }
             }
-                // catch no access error
+            // catch no access error
             catch (UnauthorizedAccessException ex)
             {
                 log.WriteLine("Could not access the output file.");
@@ -294,7 +303,7 @@ namespace Ofc
                 log.WriteLine(ex);
                 return false;
             }
-                // catch any other arror
+            // catch any other arror
             catch (Exception ex)
             {
                 log.WriteLine("Error while trying to create and write the output file.");

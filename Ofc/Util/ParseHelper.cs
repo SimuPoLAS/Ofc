@@ -1,4 +1,7 @@
-﻿namespace Ofc.Util
+﻿using OfcAlgorithm.Zetty;
+using OfcCore;
+
+namespace Ofc.Util
 {
     using System;
     using System.IO;
@@ -106,6 +109,19 @@
             }
         }
 
+        internal static void CompressFolderZetty(string srcPath, string targetPath, double min, double max, double epsilon, FileMode mode = FileMode.Create)
+        {
+            var config = new SimpleConfiguration { ["RoundingMin"] = min, ["RoundingMax"] = max, ["RoundingEpsilon"] = epsilon };
+
+            using (new FileStream(targetPath, FileMode.Create))
+            {
+            }
+            foreach (var file in Directory.GetFiles(srcPath, "*", SearchOption.AllDirectories))
+            {
+                CompressFileZetty(file, targetPath, config, FileMode.Append);
+            }
+        }
+
         internal static void CompressFolderBlockyWithRounding(string srcPath, string targetPath, double min, double max, double epsilon)
         {
             BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
@@ -118,11 +134,28 @@
             }
         }
 
+        internal static void CompressFileZetty(string srcPath, string targetPath, IConfiguaration config , FileMode mode = FileMode.Create)
+        {
+            using (var str = new FileStream(targetPath, mode))
+            {
+                try
+                {
+                    var lexi = new OfcLexer(new FileInputStream(srcPath));
+                    var purser = new OfcParser(lexi, new AlgorithmHook(new ZettyAlgorithm(config), str, EmptyConfiguration.Instance));
+                    purser.Parse();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(srcPath + ": " + ex);
+                }
+            }
+        }
+
         internal static void CompressFileBlocky(string srcPath, string targetPath, FileMode mode = FileMode.Create)
         {
             using (var str = new FileStream(targetPath, mode))
             {
-                BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
+                BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(true);
                 try
                 {
                     var lexi = new OfcLexer(new FileInputStream(srcPath));
@@ -138,7 +171,7 @@
 
         internal static void CompressFileBlockyWithRounding(string srcPath, string targetPath, double min, double max, double epsilon, FileMode mode = FileMode.Create)
         {
-            var config = new SimpleConfiguration {["RoundingMin"] = min, ["RoundingMax"] = max, ["RoundingEpsilon"] = epsilon};
+            var config = new SimpleConfiguration { ["RoundingMin"] = min, ["RoundingMax"] = max, ["RoundingEpsilon"] = epsilon };
 
             using (var str = new FileStream(targetPath, mode))
             {
@@ -167,6 +200,6 @@
             }
         }
 
-#endregion
+        #endregion
     }
 }

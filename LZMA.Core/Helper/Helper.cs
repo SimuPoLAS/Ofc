@@ -13,7 +13,7 @@ namespace LZMA.Core.Helper
         public static void CompressLzma(Stream inStream, Stream outStream)
         {
             var coder = new Encoder();
-
+           
             // Write the encoder properties
             coder.WriteCoderProperties(outStream);
 

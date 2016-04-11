@@ -27,7 +27,7 @@ namespace OfcAlgorithm.Blocky
             _bitReader = new StreamBitReader(reader);
             _writer = target;
             _metadata = BlockyMetadata.FromBitStream(_bitReader);
-
+            
             _decompressionMethods[(int)Methods.PatternSame] = new PatternSameDecompression(_metadata);
             _decompressionMethods[(int)Methods.PatternPingPong] = new PatternPingPongDecompression(_metadata);
             _decompressionMethods[(int)Methods.FloatSimmilar] = new FloatSimmilarDecompression(_metadata);

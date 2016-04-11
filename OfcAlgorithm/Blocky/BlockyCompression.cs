@@ -155,6 +155,7 @@ namespace OfcAlgorithm.Blocky
                     else if (recentBlock.Pattern == Block.PatternType.Same && recentBlock.Index + recentBlock.Length == currentBlock.Index && currentBlock.Length == recentBlock.Length)
                     {
                         recentBlock.Pattern = Block.PatternType.Pingpong;
+                        recentBlock.Method = ppp;
                         ppp.PingPongPatternLengths.Add(new PatternPingPongCompression.PatternPingPongMetadata(recentBlock.Length, recentBlock.Index));
                         lastppLength = recentBlock.Length;
                         recentBlock.Length = 2;

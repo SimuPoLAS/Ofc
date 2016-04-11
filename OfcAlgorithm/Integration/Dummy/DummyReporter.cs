@@ -23,6 +23,7 @@
 
         public void Finish()
         {
+            FileStream.Flush();
             FileStream.Dispose();
         }
 
@@ -43,7 +44,7 @@
 
         public void Report(OfcNumber number)
         {
-            FileStream.WriteLine(number.Reconstructed.ToString(CultureInfo.InvariantCulture) + ",");
+            FileStream.WriteLine(number.Reconstructed.ToString(CultureInfo.InvariantCulture));
         }
 
         public void Report(OfcNumber[] numbers, int offset, int amount)
