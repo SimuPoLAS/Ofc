@@ -10,7 +10,7 @@ namespace LZMA.Core.Helper
 {
     public class Helper
     {
-        private static void CompressLzma(Stream inStream, Stream outStream)
+        public static void CompressLzma(Stream inStream, Stream outStream)
         {
             var coder = new Encoder();
 
@@ -26,7 +26,7 @@ namespace LZMA.Core.Helper
             outStream.Close();
         }
 
-        private static void DecompressFileLzma(Stream inStream, Stream outStream)
+        public static void DecompressFileLzma(Stream inStream, Stream outStream)
         {
             var coder = new Decoder();
             // Read the decoder properties

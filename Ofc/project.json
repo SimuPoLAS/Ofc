@@ -27,8 +27,9 @@
             }
         }
     },
-    "dependencies": {
-        "OfcAlgorithm": "1.0.0-*",
-        "OfcCore": "1.0.0-*"
-    }
+  "dependencies": {
+    "LZMA.Core": "1.0.0-*",
+    "OfcAlgorithm": "1.0.0-*",
+    "OfcCore": "1.0.0-*"
+  }
 }
