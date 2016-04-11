@@ -6,6 +6,7 @@ namespace Ofc
     using System;
     using System.IO;
     using JetBrains.Annotations;
+    using LZMA.Core.Helper;
     using Ofc.CommandLine;
     using Ofc.IO;
     using Ofc.Parsing;
@@ -121,7 +122,7 @@ namespace Ofc
             argumentParser.NewLayer(CommandLineLayers.CompressDirectory).AddCommand(e => e.Name("compress")).AddCommand(e => e.Name("directory").Description("Compresses the given directory.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Optional().Visibility(ArgumentVisiblility.Usage)).AddOption(e => e.SetShortName('r').Description("Enables recursion on directories.").Optional());
 
             argumentParser.NewLayer(CommandLineLayers.DecompressFile).AddCommand(e => e.Name("decompress")).AddCommand(e => e.Name("file").Description("Decompresses the specified file.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Visibility(ArgumentVisiblility.Usage));
-            argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).AddCommand(e => e.Name("decompress")).AddCommand(e => e.Name("directory").Description("Decompresses the specified directory.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Visibility(ArgumentVisiblility.Usage));
+            argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).AddCommand(e => e.Name("decompress")).AddCommand(e => e.Name("directory").Description("Decompresses the specified directory.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Visibility(ArgumentVisiblility.Usage)).AddOption(e => e.SetShortName('r').Visibility(ArgumentVisiblility.Usage));
 
             // parse the arguments
             /*
@@ -155,6 +156,13 @@ namespace Ofc
                             break;
                         case CommandLineLayers.CompressDirectory:
                             CompressDirectory(result[0], result[1], result['f'], result['r']);
+                            break;
+
+                        case CommandLineLayers.DecompressFile:
+                            DecompressFile(result[0], result[1], result['f']);
+                            break;
+                        case CommandLineLayers.DecompressDirectory:
+                            DecompressDirectory(result[0], result[1], result['f'], result['r']);
                             break;
                     }
                 }
@@ -200,7 +208,7 @@ namespace Ofc
                 try
                 {
                     // open the output filestream
-                    using (var stream = File.Open(output, FileMode.Create))
+                    using (var stream = File.Open(output + ".tmp", FileMode.Create))
                     {
                         // parameters for the compression
                         var algorithm = new BlockyAlgorithm();
@@ -222,12 +230,18 @@ namespace Ofc
                             // create the data file
                             using (var reader = File.OpenText(input))
                             {
-                                using (var ostream = File.CreateText(output + ".dat"))
+                                using (var ostream = File.CreateText(output + ".dat.tmp"))
                                 {
                                     using (var writer = new MarerWriter(reader, ostream, hook.CompressedDataSections))
                                         writer.Do();
                                 }
                             }
+                            using (var a = File.OpenWrite(output + ".dat"))
+                            using (var b = File.OpenRead(output + ".dat.tmp"))
+                            {
+                                Helper.CompressLzma(b, a);
+                            }
+                            File.Delete(output + ".dat.tmp");
                         }
                             // catch an error from the lexer
                         catch (LexerException ex)
@@ -254,6 +268,10 @@ namespace Ofc
                             return false;
                         }
                     }
+                    using (var a = File.OpenRead(output + ".tmp"))
+                    using (var b = File.OpenWrite(output))
+                        Helper.CompressLzma(a, b);
+                    File.Delete(output + ".tmp");
                 }
                     // catch no access error
                 catch (UnauthorizedAccessException ex)
@@ -331,7 +349,10 @@ namespace Ofc
                             var success = CompressFile(e, outp + ".bin", force);
                             if (!success) // todo 7z lzma
                             {
-                                File.Copy(e, outp, true);
+                                using (var a = File.OpenRead(e))
+                                using (var b = File.OpenWrite(outp + ".dat"))
+                                    Helper.CompressLzma(a, b);
+                                File.Delete(outp + ".bin.tmp");
                                 File.Delete(outp + ".bin");
                             }
                         }
@@ -357,6 +378,17 @@ namespace Ofc
                 Console.WriteLine(ex);
             }
             return true;
+        }
+
+
+        private static bool DecompressFile(string input, [CanBeNull] string output, bool force)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static bool DecompressDirectory(string input, [CanBeNull] string output, bool force, bool recursive)
+        {
+            throw new NotImplementedException();
         }
 
         /*
