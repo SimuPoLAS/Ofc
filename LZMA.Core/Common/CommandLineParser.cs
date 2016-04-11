@@ -2,9 +2,8 @@
 
 using System;
 using System.Collections;
-using System.Globalization;
 
-namespace SevenZip.CommandLineParser
+namespace LZMA.Core.Common
 {
 	public enum SwitchType
 	{
@@ -17,7 +16,7 @@ namespace SevenZip.CommandLineParser
 
 	public class SwitchForm
 	{
-		public string IDString;
+		public string IdString;
 		public SwitchType Type;
 		public bool Multi;
 		public int MinLen;
@@ -27,7 +26,7 @@ namespace SevenZip.CommandLineParser
 		public SwitchForm(string idString, SwitchType type, bool multi,
 			int minLen, int maxLen, string postCharSet)
 		{
-			IDString = idString;
+			IdString = idString;
 			Type = type;
 			Multi = multi;
 			MinLen = minLen;
@@ -59,21 +58,21 @@ namespace SevenZip.CommandLineParser
 	public class Parser
 	{
 		public ArrayList NonSwitchStrings = new ArrayList();
-		SwitchResult[] _switches;
+	    private readonly SwitchResult[] _switches;
 
 		public Parser(int numSwitches)
 		{
 			_switches = new SwitchResult[numSwitches];
-			for (int i = 0; i < numSwitches; i++)
+			for (var i = 0; i < numSwitches; i++)
 				_switches[i] = new SwitchResult();
 		}
 
-		bool ParseString(string srcString, SwitchForm[] switchForms)
+	    private bool ParseString(string srcString, SwitchForm[] switchForms)
 		{
-			int len = srcString.Length;
+			var len = srcString.Length;
 			if (len == 0)
 				return false;
-			int pos = 0;
+			var pos = 0;
 			if (!IsItSwitchChar(srcString[pos]))
 				return false;
 			while (pos < len)
@@ -81,14 +80,14 @@ namespace SevenZip.CommandLineParser
 				if (IsItSwitchChar(srcString[pos]))
 					pos++;
 				const int kNoLen = -1;
-				int matchedSwitchIndex = 0;
-				int maxLen = kNoLen;
-				for (int switchIndex = 0; switchIndex < _switches.Length; switchIndex++)
+				var matchedSwitchIndex = 0;
+				var maxLen = kNoLen;
+				for (var switchIndex = 0; switchIndex < _switches.Length; switchIndex++)
 				{
-					int switchLen = switchForms[switchIndex].IDString.Length;
+					var switchLen = switchForms[switchIndex].IdString.Length;
 					if (switchLen <= maxLen || pos + switchLen > len)
 						continue;
-					if (String.Compare(switchForms[switchIndex].IDString, 0,
+					if (string.Compare(switchForms[switchIndex].IdString, 0,
 							srcString, pos, switchLen, StringComparison.CurrentCultureIgnoreCase) == 0)
 					{
 						matchedSwitchIndex = switchIndex;
@@ -97,14 +96,14 @@ namespace SevenZip.CommandLineParser
 				}
 				if (maxLen == kNoLen)
 					throw new Exception("maxLen == kNoLen");
-				SwitchResult matchedSwitch = _switches[matchedSwitchIndex];
-				SwitchForm switchForm = switchForms[matchedSwitchIndex];
-				if ((!switchForm.Multi) && matchedSwitch.ThereIs)
+				var matchedSwitch = _switches[matchedSwitchIndex];
+				var switchForm = switchForms[matchedSwitchIndex];
+				if (!switchForm.Multi && matchedSwitch.ThereIs)
 					throw new Exception("switch must be single");
 				matchedSwitch.ThereIs = true;
 				pos += maxLen;
-				int tailSize = len - pos;
-				SwitchType type = switchForm.Type;
+				var tailSize = len - pos;
+				var type = switchForm.Type;
 				switch (type)
 				{
 					case SwitchType.PostMinus:
@@ -113,7 +112,7 @@ namespace SevenZip.CommandLineParser
 								matchedSwitch.WithMinus = false;
 							else
 							{
-								matchedSwitch.WithMinus = (srcString[pos] == kSwitchMinus);
+								matchedSwitch.WithMinus = srcString[pos] == KSwitchMinus;
 								if (matchedSwitch.WithMinus)
 									pos++;
 							}
@@ -123,13 +122,13 @@ namespace SevenZip.CommandLineParser
 						{
 							if (tailSize < switchForm.MinLen)
 								throw new Exception("switch is not full");
-							string charSet = switchForm.PostCharSet;
+							var charSet = switchForm.PostCharSet;
 							const int kEmptyCharValue = -1;
 							if (tailSize == 0)
 								matchedSwitch.PostCharIndex = kEmptyCharValue;
 							else
 							{
-								int index = charSet.IndexOf(srcString[pos]);
+								var index = charSet.IndexOf(srcString[pos]);
 								if (index < 0)
 									matchedSwitch.PostCharIndex = kEmptyCharValue;
 								else
@@ -143,7 +142,7 @@ namespace SevenZip.CommandLineParser
 					case SwitchType.LimitedPostString:
 					case SwitchType.UnLimitedPostString:
 						{
-							int minLen = switchForm.MinLen;
+							var minLen = switchForm.MinLen;
 							if (tailSize < minLen)
 								throw new Exception("switch is not full");
 							if (type == SwitchType.UnLimitedPostString)
@@ -151,11 +150,11 @@ namespace SevenZip.CommandLineParser
 								matchedSwitch.PostStrings.Add(srcString.Substring(pos));
 								return true;
 							}
-							String stringSwitch = srcString.Substring(pos, minLen);
+							var stringSwitch = srcString.Substring(pos, minLen);
 							pos += minLen;
-							for (int i = minLen; i < switchForm.MaxLen && pos < len; i++, pos++)
+							for (var i = minLen; i < switchForm.MaxLen && pos < len; i++, pos++)
 							{
-								char c = srcString[pos];
+								var c = srcString[pos];
 								if (IsItSwitchChar(c))
 									break;
 								stringSwitch += c;
@@ -171,15 +170,15 @@ namespace SevenZip.CommandLineParser
 
 		public void ParseStrings(SwitchForm[] switchForms, string[] commandStrings)
 		{
-			int numCommandStrings = commandStrings.Length;
-			bool stopSwitch = false;
-			for (int i = 0; i < numCommandStrings; i++)
+			var numCommandStrings = commandStrings.Length;
+			var stopSwitch = false;
+			for (var i = 0; i < numCommandStrings; i++)
 			{
-				string s = commandStrings[i];
+				var s = commandStrings[i];
 				if (stopSwitch)
 					NonSwitchStrings.Add(s);
 				else
-					if (s == kStopSwitchParsing)
+					if (s == KStopSwitchParsing)
 					stopSwitch = true;
 				else
 					if (!ParseString(s, switchForms))
@@ -192,9 +191,9 @@ namespace SevenZip.CommandLineParser
 		public static int ParseCommand(CommandForm[] commandForms, string commandString,
 			out string postString)
 		{
-			for (int i = 0; i < commandForms.Length; i++)
+			for (var i = 0; i < commandForms.Length; i++)
 			{
-				string id = commandForms[i].IDString;
+				var id = commandForms[i].IdString;
 				if (commandForms[i].PostStringMode)
 				{
 					if (commandString.IndexOf(id) == 0)
@@ -214,20 +213,20 @@ namespace SevenZip.CommandLineParser
 			return -1;
 		}
 
-		static bool ParseSubCharsCommand(int numForms, CommandSubCharsSet[] forms,
+	    private static bool ParseSubCharsCommand(int numForms, CommandSubCharsSet[] forms,
 			string commandString, ArrayList indices)
 		{
 			indices.Clear();
-			int numUsedChars = 0;
-			for (int i = 0; i < numForms; i++)
+			var numUsedChars = 0;
+			for (var i = 0; i < numForms; i++)
 			{
-				CommandSubCharsSet charsSet = forms[i];
-				int currentIndex = -1;
-				int len = charsSet.Chars.Length;
-				for (int j = 0; j < len; j++)
+				var charsSet = forms[i];
+				var currentIndex = -1;
+				var len = charsSet.Chars.Length;
+				for (var j = 0; j < len; j++)
 				{
-					char c = charsSet.Chars[j];
-					int newIndex = commandString.IndexOf(c);
+					var c = charsSet.Chars[j];
+					var newIndex = commandString.IndexOf(c);
 					if (newIndex >= 0)
 					{
 						if (currentIndex >= 0)
@@ -242,32 +241,33 @@ namespace SevenZip.CommandLineParser
 					return false;
 				indices.Add(currentIndex);
 			}
-			return (numUsedChars == commandString.Length);
+			return numUsedChars == commandString.Length;
 		}
-		const char kSwitchID1 = '-';
-		const char kSwitchID2 = '/';
 
-		const char kSwitchMinus = '-';
-		const string kStopSwitchParsing = "--";
+	    private const char KSwitchId1 = '-';
+	    private const char KSwitchId2 = '/';
 
-		static bool IsItSwitchChar(char c)
+	    private const char KSwitchMinus = '-';
+	    private const string KStopSwitchParsing = "--";
+
+	    private static bool IsItSwitchChar(char c)
 		{
-			return (c == kSwitchID1 || c == kSwitchID2);
+			return c == KSwitchId1 || c == KSwitchId2;
 		}
 	}
 
 	public class CommandForm
 	{
-		public string IDString = "";
-		public bool PostStringMode = false;
+		public string IdString = "";
+		public bool PostStringMode;
 		public CommandForm(string idString, bool postStringMode)
 		{
-			IDString = idString;
+			IdString = idString;
 			PostStringMode = postStringMode;
 		}
 	}
 
-	class CommandSubCharsSet
+    internal class CommandSubCharsSet
 	{
 		public string Chars = "";
 		public bool EmptyAllowed = false;

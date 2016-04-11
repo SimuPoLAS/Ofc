@@ -1,72 +1,72 @@
 // InBuffer.cs
 
-namespace SevenZip.Buffer
+namespace LZMA.Core.Common
 {
 	public class InBuffer
 	{
-		byte[] m_Buffer;
-		uint m_Pos;
-		uint m_Limit;
-		uint m_BufferSize;
-		System.IO.Stream m_Stream;
-		bool m_StreamWasExhausted;
-		ulong m_ProcessedSize;
+	    private readonly byte[] _mBuffer;
+	    private uint _mPos;
+	    private uint _mLimit;
+	    private readonly uint _mBufferSize;
+	    private System.IO.Stream _mStream;
+	    private bool _mStreamWasExhausted;
+	    private ulong _mProcessedSize;
 
 		public InBuffer(uint bufferSize)
 		{
-			m_Buffer = new byte[bufferSize];
-			m_BufferSize = bufferSize;
+			_mBuffer = new byte[bufferSize];
+			_mBufferSize = bufferSize;
 		}
 
 		public void Init(System.IO.Stream stream)
 		{
-			m_Stream = stream;
-			m_ProcessedSize = 0;
-			m_Limit = 0;
-			m_Pos = 0;
-			m_StreamWasExhausted = false;
+			_mStream = stream;
+			_mProcessedSize = 0;
+			_mLimit = 0;
+			_mPos = 0;
+			_mStreamWasExhausted = false;
 		}
 
 		public bool ReadBlock()
 		{
-			if (m_StreamWasExhausted)
+			if (_mStreamWasExhausted)
 				return false;
-			m_ProcessedSize += m_Pos;
-			int aNumProcessedBytes = m_Stream.Read(m_Buffer, 0, (int)m_BufferSize);
-			m_Pos = 0;
-			m_Limit = (uint)aNumProcessedBytes;
-			m_StreamWasExhausted = (aNumProcessedBytes == 0);
-			return (!m_StreamWasExhausted);
+			_mProcessedSize += _mPos;
+			var aNumProcessedBytes = _mStream.Read(_mBuffer, 0, (int)_mBufferSize);
+			_mPos = 0;
+			_mLimit = (uint)aNumProcessedBytes;
+			_mStreamWasExhausted = aNumProcessedBytes == 0;
+			return !_mStreamWasExhausted;
 		}
 
 
 		public void ReleaseStream()
 		{
 			// m_Stream.Close(); 
-			m_Stream = null;
+			_mStream = null;
 		}
 
 		public bool ReadByte(byte b) // check it
 		{
-			if (m_Pos >= m_Limit)
+			if (_mPos >= _mLimit)
 				if (!ReadBlock())
 					return false;
-			b = m_Buffer[m_Pos++];
+			b = _mBuffer[_mPos++];
 			return true;
 		}
 
 		public byte ReadByte()
 		{
 			// return (byte)m_Stream.ReadByte();
-			if (m_Pos >= m_Limit)
+			if (_mPos >= _mLimit)
 				if (!ReadBlock())
 					return 0xFF;
-			return m_Buffer[m_Pos++];
+			return _mBuffer[_mPos++];
 		}
 
 		public ulong GetProcessedSize()
 		{
-			return m_ProcessedSize + m_Pos;
+			return _mProcessedSize + _mPos;
 		}
 	}
 }

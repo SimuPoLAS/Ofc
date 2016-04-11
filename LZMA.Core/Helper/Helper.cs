@@ -4,14 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using LZMA.Core.Compatibility;
+using LZMA.Core.Compress.LZMA;
 
 namespace LZMA.Core.Helper
 {
     public class Helper
     {
-        private static void CompressLZMA(Stream inStream, Stream outStream)
+        private static void CompressLzma(Stream inStream, Stream outStream)
         {
-            SevenZip.Compression.LZMA.Encoder coder = new SevenZip.Compression.LZMA.Encoder();
+            var coder = new Encoder();
 
             // Write the encoder properties
             coder.WriteCoderProperties(outStream);
@@ -25,17 +26,17 @@ namespace LZMA.Core.Helper
             outStream.Close();
         }
 
-        private static void DecompressFileLZMA(Stream inStream, Stream outStream)
+        private static void DecompressFileLzma(Stream inStream, Stream outStream)
         {
-            SevenZip.Compression.LZMA.Decoder coder = new SevenZip.Compression.LZMA.Decoder();
+            var coder = new Decoder();
             // Read the decoder properties
-            byte[] properties = new byte[5];
+            var properties = new byte[5];
             inStream.Read(properties, 0, 5);
 
             // Read in the decompress file size.
-            byte[] fileLengthBytes = new byte[8];
+            var fileLengthBytes = new byte[8];
             inStream.Read(fileLengthBytes, 0, 8);
-            long fileLength = BitConverter.ToInt64(fileLengthBytes, 0);
+            var fileLength = BitConverter.ToInt64(fileLengthBytes, 0);
 
             coder.SetDecoderProperties(properties);
             coder.Code(inStream, outStream, inStream.Length, fileLength, null);
