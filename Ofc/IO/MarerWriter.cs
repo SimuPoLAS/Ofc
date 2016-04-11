@@ -40,6 +40,7 @@
                 var value = section.Start - t;
                 t += section.End - section.Start;
                 _output.BaseStream.Write(BitConverter.GetBytes(value), 0, 8);
+                _output.BaseStream.WriteByte(section.Size);
             }
             _output.BaseStream.Write(BitConverter.GetBytes(-1L), 0, 8);
 

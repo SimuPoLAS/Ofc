@@ -15,6 +15,7 @@
 
         private bool _inList;
         private uint _start;
+        private byte _size;
 
         internal List<CompressedSection> CompressedDataSections { get; set; } = new List<CompressedSection>();
 
@@ -65,6 +66,7 @@
             if (_inList) throw new NotSupportedException();
             _inList = true;
             _reporter = _algorithm.Compress(null, EmptyConfiguration.Instance, _output, (int) type, capacity);
+            _size = (byte) type;
             if (_reporter == null) throw new NotSupportedException();
             _start = PositionProvider.Position;
         }
@@ -84,7 +86,7 @@
         {
             if (!_inList) return;
             _reporter.Finish();
-            CompressedDataSections.Add(new CompressedSection(_start, PositionProvider.Position));
+            CompressedDataSections.Add(new CompressedSection(_start, PositionProvider.Position, _size));
             _inList = false;
         }
 

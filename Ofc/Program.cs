@@ -30,6 +30,23 @@ namespace Ofc
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
+            using (var source = File.OpenText(@"W:\Documents\GitHub\Ofc\Ofc\bin\dambreak3d.out\dambreak3d\0\alpha1.bin.dat"))
+            {
+                using (var writer = File.CreateText("out"))
+                {
+                    using (var stream = File.OpenRead(@"W:\Documents\GitHub\Ofc\Ofc\bin\dambreak3d.out\dambreak3d\0\alpha1.bin"))
+                    {
+                        var algorithm = new BlockyAlgorithm();
+                        var converter = new CompressionDataConverter();
+                        using (var reader = new MarerReader<OfcNumber>(source, writer, algorithm, converter, stream))
+                        {
+                            reader.Do();
+                        }
+                    }
+                }
+            }
+            return;
+
             /*
             BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
             using (var output = File.CreateText("outp"))
