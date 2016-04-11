@@ -1,4 +1,6 @@
-﻿namespace Ofc
+﻿#define DBGIN
+
+namespace Ofc
 {
     using System;
     using System.IO;
@@ -27,6 +29,20 @@
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
+            /*
+            BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
+            using (var output = File.CreateText("outp"))
+            {
+                using (var input = File.Open("alpha1.bin", FileMode.Open))
+                {
+                    var a = new BinaryInputReader<OfcNumber>(input, output, new BlockyAlgorithm(), new CompressionDataConverter());
+                    a.Read();
+                }
+            }
+
+            return;
+            //*/
+
             /* COMPRESSING A DRIECTORY
 
             var inp = "W:/desktop/dambreak3d/";
@@ -326,12 +342,12 @@
 
                     log.WriteLine($"\n## {relative} [{e.Length}B]");
 
-                    bool success;
                     try
                     {
-                        var outp = outputRoot.FullName + relative;
+                        var outp = Path.Combine(outputRoot.FullName, relative);
                         Directory.CreateDirectory(Path.GetDirectoryName(outp));
-                        success = CompressFile(log, e, new FileInfo(outp), force);
+                        var success = CompressFile(log, e, new FileInfo(outp + ".bin"), force);
+                        if (!success) e.CopyTo(outp, true);
                     }
                     catch (Exception ex)
                     {
