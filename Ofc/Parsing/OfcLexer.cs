@@ -76,7 +76,6 @@
 
         private void Record(char c)
         {
-            _currentPosition++;
             if (c == '\n')
             {
 #if CDUMP
@@ -97,7 +96,6 @@
         // todo record does not check for buffer length
         private void Record(uint count)
         {
-            _currentPosition += count;
             for (var i = 0; i < count; i++)
             {
                 if (_buffer[_position + i] == '\n')
@@ -136,7 +134,7 @@
 #if CDUMP
             Console.WriteLine($"tkn: {type}; x: {_tokenLine}; y: {_tokenColumn}");
 #endif
-            return new OfcToken(type, data, _tokenLine, _tokenColumn, _currentPosition - _tokenPosition);
+            return new OfcToken(type, data, _tokenPosition, _tokenLine, _tokenColumn, _currentPosition - _tokenPosition);
         }
 
         private void StartToken()
@@ -152,6 +150,7 @@
             var character = _buffer[_position];
             _length--;
             _position++;
+            _currentPosition++;
             if (_recordPosition) Record(character);
             return character;
         }
@@ -209,12 +208,14 @@
         private void Reset()
         {
             if (_recordPosition) Record((uint) _length);
+            _currentPosition += (uint) _length;
             _length = 0;
         }
 
         private void Skip()
         {
             if (_recordPosition) Record(_buffer[_position]);
+            _currentPosition++;
             _position++;
             _length--;
         }
@@ -222,6 +223,7 @@
         private void Skip(int amount)
         {
             if (_recordPosition) Record((uint) amount);
+            _currentPosition += (uint)amount;
             _position += amount;
             _length -= amount;
         }

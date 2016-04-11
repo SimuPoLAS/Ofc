@@ -19,6 +19,11 @@
 
 
         /// <summary>
+        ///     Position in the source file at which the token starts.
+        /// </summary>
+        internal uint Position;
+
+        /// <summary>
         ///     Column at which the token starts.
         /// </summary>
         internal uint Column;
@@ -38,7 +43,7 @@
         ///     Sets up the token with the specified type the payload is asserted to be <c>null</c>.
         /// </summary>
         /// <param name="type">Type of the token.</param>
-        public OfcToken(OfcTokenType type) : this(type, null)
+        public OfcToken(OfcTokenType type) : this(type, null, 0)
         {
         }
 
@@ -47,7 +52,7 @@
         /// </summary>
         /// <param name="type">Type of the token.</param>
         /// <param name="payload">Payload of the token.</param>
-        public OfcToken(OfcTokenType type, [CanBeNull] string payload) : this(type, payload, 0, 0, 0)
+        public OfcToken(OfcTokenType type, [CanBeNull] string payload, uint position) : this(type, payload, position, 0, 0, 0)
         {
         }
 
@@ -59,11 +64,12 @@
         /// <param name="column">Column at which the token starts.</param>
         /// <param name="length">Length of the token in characters.</param>
         /// <param name="line">Line at which the token starts.</param>
-        public OfcToken(OfcTokenType type, [CanBeNull] string payload, uint column, uint length, uint line)
+        public OfcToken(OfcTokenType type, [CanBeNull] string payload, uint position, uint column, uint length, uint line)
         {
             Type = type;
             Payload = payload;
 
+            Position = position;
             Column = column;
             Length = length;
             Line = line;

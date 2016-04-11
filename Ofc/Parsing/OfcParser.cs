@@ -1,5 +1,6 @@
 ﻿// ReSharper disable LoopCanBeConvertedToQuery
 
+
 #pragma warning disable CS0612
 
 namespace Ofc.Parsing
@@ -8,9 +9,8 @@ namespace Ofc.Parsing
     using JetBrains.Annotations;
     using Ofc.IO;
     using Ofc.Parsing.Hooks;
-    using OfcCore;
 
-    internal class OfcParser
+    internal class OfcParser : IPositionProvider
     {
         /** base members */
         private OfcToken[] _buffer;
@@ -333,12 +333,15 @@ namespace Ofc.Parsing
                         Skip(1);
                         _hook.EnterList(type, amount);
                         var done = false;
+                        var d = false;
                         do
                         {
                             if (!Needs(1)) throw new ParserException();
                             c = _buffer[_position];
                             if (c.Type == OfcTokenType.PARENTHESE_CLOSE)
                             {
+                                d = true;
+                                _hook.LeaveList();
                                 Skip(1);
                                 done = true;
                                 break;
@@ -358,8 +361,8 @@ namespace Ofc.Parsing
                                     throw new Exception("Not supported list type: " + type);
                             }
                         } while (!(_eos && _length == 0));
+                        if (!d) _hook.LeaveList();
                         if (!done) throw new ParserException();
-                        _hook.LeaveList();
                         return;
                     }
 
@@ -448,5 +451,7 @@ namespace Ofc.Parsing
         }
 
         #endregion
+
+        public uint Position => _buffer[_position].Position;
     }
 }

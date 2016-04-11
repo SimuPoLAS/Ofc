@@ -1,6 +1,5 @@
-﻿#define DBGIN
-
-using Ofc.Util;
+﻿
+#define DBGIN
 
 namespace Ofc
 {
@@ -31,12 +30,22 @@ namespace Ofc
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
-            ParseHelper.CompressFileBlocky(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\alpha1", @"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\alpha1.bin2");
-            ParseHelper.DecompressFileBlocky(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\alpha1.bin2", @"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\alpha1.txt");
+            using (var source = File.OpenText(@"W:\Documents\GitHub\Ofc\Ofc\bin\dambreak3d.out\dambreak3d\0\alpha1.bin.dat"))
+            {
+                using (var writer = File.CreateText("out"))
+                {
+                    using (var stream = File.OpenRead(@"W:\Documents\GitHub\Ofc\Ofc\bin\dambreak3d.out\dambreak3d\0\alpha1.bin"))
+                    {
+                        var algorithm = new BlockyAlgorithm();
+                        var converter = new CompressionDataConverter();
+                        using (var reader = new MarerReader<OfcNumber>(source, writer, algorithm, converter, stream))
+                        {
+                            reader.Do();
+                        }
+                    }
+                }
+            }
             return;
-            ParseHelper.CompressFolderBlockyWithRounding(@"C:\damBreak4phase_wp8", @"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\target.bin", 0d, double.MaxValue, 1e-2);
-            LZMA.Core.Helper.Helper.CompressLzma(File.Open(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\target.bin", FileMode.Open), File.Open(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\target.bin.lzma", FileMode.Create));
-            LZMA.Core.Helper.Helper.DecompressFileLzma(File.Open(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\target.bin.lzma", FileMode.Open), File.Open(@"C:\Users\Nino\Documents\GitHub\Ofc\Ofc\bin\target.bin.recon", FileMode.Create));
 
             /*
             BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
@@ -255,21 +264,26 @@ namespace Ofc
                     try
                     {
                         // create a hook which will handle the internal constructs
-                        using (var hook = new BinaryOutputHook<OfcNumber>(stream, algorithm, converter))
+                        var hook = new MarerHook<OfcNumber>(algorithm, converter, stream);
+                        using (var file = new FileInputStream(input.FullName))
                         {
-                            // open input stream
-                            using (var istream = new FileInputStream(input.OpenText()))
+                            var lexer = new OfcLexer(file);
+                            var parser = new OfcParser(lexer, hook);
+                            hook.PositionProvider = parser;
+                            parser.Parse();
+                        }
+
+                        // create the data file
+                        using (var reader = File.OpenText(input.FullName))
+                        {
+                            using (var ostream = File.CreateText(output.FullName + ".dat"))
                             {
-                                // create a lexer
-                                var lexer = new OfcLexer(istream);
-                                // create a parser on top of the lexer
-                                var parser = new OfcParser(lexer, hook);
-                                // parse the file
-                                parser.Parse();
+                                using (var writer = new MarerWriter(reader, ostream, hook.CompressedDataSections))
+                                    writer.Do();
                             }
                         }
                     }
-                    // catch an error from the lexer
+                        // catch an error from the lexer
                     catch (LexerException ex)
                     {
                         log.WriteLine("Error while reading the file. [lexing failed]");
@@ -277,7 +291,7 @@ namespace Ofc
                         log.WriteLine(ex);
                         return false;
                     }
-                    // catch an error from the parser
+                        // catch an error from the parser
                     catch (ParserException ex)
                     {
                         log.WriteLine("Error while reading the file. [parsing failed]");
@@ -285,7 +299,7 @@ namespace Ofc
                         log.WriteLine(ex);
                         return false;
                     }
-                    // catch any other error while the parsing happens
+                        // catch any other error while the parsing happens
                     catch (Exception ex)
                     {
                         log.WriteLine("Error while reading the file. [unknown]");
@@ -295,7 +309,7 @@ namespace Ofc
                     }
                 }
             }
-            // catch no access error
+                // catch no access error
             catch (UnauthorizedAccessException ex)
             {
                 log.WriteLine("Could not access the output file.");
@@ -303,7 +317,7 @@ namespace Ofc
                 log.WriteLine(ex);
                 return false;
             }
-            // catch any other arror
+                // catch any other arror
             catch (Exception ex)
             {
                 log.WriteLine("Error while trying to create and write the output file.");
