@@ -71,7 +71,7 @@ namespace OfcAlgorithm.Blocky
                     valueCount++;
                 }
             }
-            _writer.Flush();
+            _writer?.Flush();
         }
 
         private DecompressionMethod GetMethodForBlock(Block block)
