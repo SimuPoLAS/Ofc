@@ -28,7 +28,7 @@ namespace OfcAlgorithm.Blocky.Integration
         }
 
 
-        public void Decompress(IFile file, IConfiguaration config, Stream reader, IReporter<OfcNumber> reporter)
+        public void Decompress(IFile file, IConfiguaration config, Stream reader, IReporter<OfcNumber> reporter, int width)
         {
             new BlockyDecompression(reader, reporter).Decompress();
         }

@@ -59,6 +59,7 @@
         /// <param name="configuaration">The configuration used to read the compressed data.</param>
         /// <param name="input">The input stream where all the compressed data is read from.</param>
         /// <param name="reporter">The reporter which will be used by the algorithm to return the read values.</param>
-        void Decompress([CanBeNull]IFile target, [NotNull]IConfiguaration configuaration, [NotNull]Stream input, [NotNull]IReporter<T> reporter);
+        /// <param name="width">The width of the list.</param>
+        void Decompress([CanBeNull] IFile target, [NotNull] IConfiguaration configuaration, [NotNull] Stream input, [NotNull] IReporter<T> reporter, int width);
     }
 }

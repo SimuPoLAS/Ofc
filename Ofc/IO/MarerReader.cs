@@ -54,7 +54,7 @@
 
                 JumpTo(section.Start);
                 _reporter.Size = section.Size;
-                _algorithm.Decompress(null, EmptyConfiguration.Instance, _stream, _reporter);
+                _algorithm.Decompress(null, EmptyConfiguration.Instance, _stream, _reporter, section.Size);
             }
             JumpTo(long.MaxValue);
         }

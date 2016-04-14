@@ -46,9 +46,9 @@ namespace OfcAlgorithm.Rounding
             return new RounderReporter(_stream, configuaration);
         }
 
-        public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<OfcNumber> reporter)
+        public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<OfcNumber> reporter, int width)
         {
-            _embeddedAlgorithm.Decompress(target, configuaration, input, reporter);
+            _embeddedAlgorithm.Decompress(target, configuaration, input, reporter, width);
         }
     }
 }
