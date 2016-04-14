@@ -29,82 +29,6 @@
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
-            /**
-            using (var source = File.OpenText(@"W:\Documents\GitHub\Ofc\Ofc\bin\dambreak3d.out\dambreak3d\0\alpha1.bin.dat"))
-            {
-                using (var writer = File.CreateText("out"))
-                {
-                    using (var stream = File.OpenRead(@"W:\Documents\GitHub\Ofc\Ofc\bin\dambreak3d.out\dambreak3d\0\alpha1.bin"))
-                    {
-                        var algorithm = new BlockyAlgorithm();
-                        var converter = new CompressionDataConverter();
-                        using (var reader = new MarerReader<OfcNumber>(source, writer, algorithm, converter, stream))
-                        {
-                            reader.Do();
-                        }
-                    }
-                }
-            }
-            return;
-            */
-
-            /*
-            BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
-            using (var output = File.CreateText("outp"))
-            {
-                using (var input = File.Open("alpha1.bin", FileMode.Open))
-                {
-                    var a = new BinaryInputReader<OfcNumber>(input, output, new BlockyAlgorithm(), new CompressionDataConverter());
-                    a.Read();
-                }
-            }
-
-            return;
-            //*/
-
-            /* COMPRESSING A DRIECTORY
-
-            var inp = "W:/desktop/dambreak3d/";
-            var outp = "W:/desktop/dambreak3d out/";
-
-            var converter = new CompressionDataConverter();
-            BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
-
-            foreach (var file in Directory.EnumerateFiles(inp, "*", SearchOption.AllDirectories))
-            {
-                var relative = file.Substring(inp.Length);
-                var full = Path.Combine(outp, relative + ".bin");
-
-                var success = false;
-                try
-                {
-                    var motherDirectory = Path.GetDirectoryName(full);
-                    if (motherDirectory != null) Directory.CreateDirectory(motherDirectory);
-
-                    using (var stream = File.Open(full, FileMode.Create))
-                    {
-                        using (var bhook = new BinaryOutputHook<OfcNumber>(stream, new BlockyAlgorithm(), converter))
-                        {
-                            success = ParseHelper.TryParseFile(file, bhook);
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    success = false;
-                }
-
-                if (!success)
-                {
-                    File.Delete(full);
-                    Console.WriteLine($"Could not compress {relative}.");
-                    File.Copy(file, full);
-                }
-            }
-
-            return;
-            */
-
             BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
 
             // initiate the parser
@@ -116,11 +40,11 @@
             argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Displays this help message."));
             argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Displays the current version of the tool."));
 
-            argumentParser.NewLayer(CommandLineLayers.CompressFile).AddCommand(e => e.Name("compress")).AddCommand(e => e.Name("file").Description("Compresses the given file.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Description("Force mode."));
-            argumentParser.NewLayer(CommandLineLayers.CompressDirectory).AddCommand(e => e.Name("compress")).AddCommand(e => e.Name("directory").Description("Compresses the given directory.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Optional().Visibility(ArgumentVisiblility.Usage)).AddOption(e => e.SetShortName('r').Description("Enables recursion on directories.").Optional());
+            argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output", true).Option('f').Option('r');
+            argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output", true);
 
-            argumentParser.NewLayer(CommandLineLayers.DecompressFile).AddCommand(e => e.Name("decompress")).AddCommand(e => e.Name("file").Description("Decompresses the specified file.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Visibility(ArgumentVisiblility.Usage));
-            argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).AddCommand(e => e.Name("decompress")).AddCommand(e => e.Name("directory").Description("Decompresses the specified directory.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Visibility(ArgumentVisiblility.Usage)).AddOption(e => e.SetShortName('r').Visibility(ArgumentVisiblility.Usage));
+            argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output", true).Option('f').Option('r');
+            argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompresses the specified compressed file or set of files.").Argument("input").Argument("output", true).Option('f');
 
             // parse the arguments
             /*
@@ -181,7 +105,7 @@
 #endif
         }
 
-        private static bool CompressFile(string input, [CanBeNull] string output, bool force)
+        private static bool CompressFile(string input, string output, bool force)
         {
             try
             {
@@ -380,7 +304,7 @@
         }
 
 
-        private static bool DecompressFile(string input, [CanBeNull] string output, bool force)
+        private static bool DecompressFile(string input, string output, bool force)
         {
             try
             {
@@ -453,7 +377,7 @@
             return true;
         }
 
-        private static bool DecompressDirectory(string input, [CanBeNull] string output, bool force, bool recursive)
+        private static bool DecompressDirectory(string input, string output, bool force, bool recursive)
         {
             try
             {
@@ -497,229 +421,6 @@
             return true;
         }
 
-        /*
-        /// <summary>
-        ///     Compresses the specified file or directory and saves the output under the specified path.
-        /// </summary>
-        /// <param name="input">Input file or directory.</param>
-        /// <param name="output">Output file or directory.</param>
-        /// <param name="console">When <c>true</c> the logging output will be written to console.</param>
-        /// <param name="force">When <c>true</c> Force mode is active.</param>
-        private static void Compress(string input, [CanBeNull] string output, bool console, bool force)
-        {
-            if (string.IsNullOrWhiteSpace(input)) throw new ArgumentException();
-            if (string.IsNullOrWhiteSpace(output)) output = null;
-
-            // check if the input is a file or a directory
-            try
-            {
-                if (File.Exists(input))
-                {
-                    // create file infos
-                    var a = new FileInfo(input);
-                    var b = new FileInfo(output ?? a.Name + ".bin");
-
-                    if (console)
-                    {
-                        CompressFile(Console.Out, a, b, force);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            Directory.CreateDirectory(Logs);
-                            using (var log = File.OpenWrite(Path.Combine(Logs, a.Name + ".log")))
-                            {
-                                using (var logWriter = new StreamWriter(log))
-                                {
-                                    CompressFile(logWriter, a, b, force);
-                                }
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            CompressFile(Console.Out, a, b, force);
-                        }
-                    }
-                }
-                else if (Directory.Exists(input))
-                {
-                    // create directory infos
-                    var a = new DirectoryInfo(input);
-                    var b = new DirectoryInfo(output ?? a.Name + ".out");
-
-                    try
-                    {
-                        CompressDirectory(Console.Out, a, b, console, force, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Could not compress the directory.");
-                    }
-                }
-                else Console.WriteLine("Could not find the specified file/directory.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Invalid input path.");
-            }
-        }
-
-        private static bool CompressFile(TextWriter log, FileInfo input, FileInfo output, bool force)
-        {
-            // check if there is an input file
-            if (!input.Exists)
-            {
-                log.WriteLine("Could not find the specified file.");
-                return false;
-            }
-
-            // check fi threre is an output file
-            if (!force && output.Exists)
-            {
-                log.WriteLine("The output file already exists. Use fore mode (-f) to override the file.");
-                return false;
-            }
-
-            // start compression
-            try
-            {
-                // open the output filestream
-                using (var stream = output.Open(FileMode.Create))
-                {
-                    // parameters for the compression
-                    var algorithm = new BlockyAlgorithm();
-                    var converter = new CompressionDataConverter();
-
-                    // do the compression
-                    try
-                    {
-                        // create a hook which will handle the internal constructs
-                        var hook = new MarerHook<OfcNumber>(algorithm, converter, stream);
-                        using (var file = new FileInputStream(input.FullName))
-                        {
-                            var lexer = new OfcLexer(file);
-                            var parser = new OfcParser(lexer, hook);
-                            hook.PositionProvider = parser;
-                            parser.Parse();
-                        }
-
-                        // create the data file
-                        using (var reader = File.OpenText(input.FullName))
-                        {
-                            using (var ostream = File.CreateText(output.FullName + ".dat"))
-                            {
-                                using (var writer = new MarerWriter(reader, ostream, hook.CompressedDataSections))
-                                    writer.Do();
-                            }
-                        }
-                    }
-                        // catch an error from the lexer
-                    catch (LexerException ex)
-                    {
-                        log.WriteLine("Error while reading the file. [lexing failed]");
-                        log.WriteLine();
-                        log.WriteLine(ex);
-                        return false;
-                    }
-                        // catch an error from the parser
-                    catch (ParserException ex)
-                    {
-                        log.WriteLine("Error while reading the file. [parsing failed]");
-                        log.WriteLine();
-                        log.WriteLine(ex);
-                        return false;
-                    }
-                        // catch any other error while the parsing happens
-                    catch (Exception ex)
-                    {
-                        log.WriteLine("Error while reading the file. [unknown]");
-                        log.WriteLine();
-                        log.WriteLine(ex);
-                        return false;
-                    }
-                }
-            }
-                // catch no access error
-            catch (UnauthorizedAccessException ex)
-            {
-                log.WriteLine("Could not access the output file.");
-                log.WriteLine();
-                log.WriteLine(ex);
-                return false;
-            }
-                // catch any other arror
-            catch (Exception ex)
-            {
-                log.WriteLine("Error while trying to create and write the output file.");
-                log.WriteLine();
-                log.WriteLine(ex);
-                return false;
-            }
-
-            // Print a done message.
-            Console.WriteLine("File was compressed successfully");
-            return true;
-        }
-
-        private static bool CompressDirectory(TextWriter log, DirectoryInfo root, DirectoryInfo outputRoot, bool console, bool force, bool recursive = false)
-        {
-            // check if there is an input file
-            if (!root.Exists)
-            {
-                log.WriteLine("Could not find the specified file.");
-                return false;
-            }
-
-            // check fi threre is an output file
-            if (!force && !outputRoot.Exists)
-            {
-                log.WriteLine("The output directory does not exist. Use fore mode (-f) to create it.");
-                return false;
-            }
-
-            // start compression
-            try
-            {
-                Directory.CreateDirectory(outputRoot.FullName);
-
-                // base (root) folder
-                var rUri = new Uri(root.FullName);
-
-                log.WriteLine($"# {root.FullName}");
-
-                // Start paralell work
-                foreach (var e in root.EnumerateFiles("*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
-                {
-                    var mUri = new Uri(e.FullName);
-                    var relative = rUri.MakeRelativeUri(mUri).ToString();
-
-                    log.WriteLine($"\n## {relative} [{e.Length}B]");
-
-                    try
-                    {
-                        var outp = Path.Combine(outputRoot.FullName, relative);
-                        Directory.CreateDirectory(Path.GetDirectoryName(outp));
-                        var success = CompressFile(log, e, new FileInfo(outp + ".bin"), force);
-                        if (!success) e.CopyTo(outp, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        log.WriteLine("Error:");
-                        log.WriteLine(ex);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                log.WriteLine("Error while trying compress the specified directory.");
-                log.WriteLine();
-                log.WriteLine(ex);
-                return false;
-            }
-            return true;
-        }
-        */
 
         /// <summary>
         ///     Represents a layer in the argument parser.
