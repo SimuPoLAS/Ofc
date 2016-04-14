@@ -5,6 +5,7 @@ namespace Ofc
 {
     using System;
     using System.IO;
+    using System.Linq;
     using JetBrains.Annotations;
     using LZMA.Core.Helper;
     using Ofc.CommandLine;
@@ -236,7 +237,7 @@ namespace Ofc
                                         writer.Do();
                                 }
                             }
-                            using (var a = File.OpenWrite(output + ".dat"))
+                            using (var a = File.OpenWrite(Path.ChangeExtension(output, ".dat")))
                             using (var b = File.OpenRead(output + ".dat.tmp"))
                             {
                                 Helper.CompressLzma(b, a);
@@ -350,7 +351,7 @@ namespace Ofc
                             if (!success) // todo 7z lzma
                             {
                                 using (var a = File.OpenRead(e))
-                                using (var b = File.OpenWrite(outp + ".dat"))
+                                using (var b = File.OpenWrite(outp + ".datu"))
                                     Helper.CompressLzma(a, b);
                                 File.Delete(outp + ".bin.tmp");
                                 File.Delete(outp + ".bin");
@@ -376,6 +377,7 @@ namespace Ofc
                 Console.WriteLine("Unexpected error.");
                 Console.WriteLine();
                 Console.WriteLine(ex);
+                return false;
             }
             return true;
         }
@@ -383,12 +385,119 @@ namespace Ofc
 
         private static bool DecompressFile(string input, [CanBeNull] string output, bool force)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var info = new FileInfo(input);
+
+                // check if the input exists
+                if (!info.Exists)
+                {
+                    Console.WriteLine("Could not find the specified file.");
+                    return false;
+                }
+
+                // set output
+                if (output == null) output = Path.Combine(info.DirectoryName, info.Name.Substring(0, info.Name.Length - info.Extension.Length));
+
+                if (info.Extension == ".dat")
+                {
+                    var t = Path.ChangeExtension(info.FullName, ".bin");
+                    if (!File.Exists(t))
+                    {
+                        Console.WriteLine("Bin container does not exist for the specified file.");
+                        return false;
+                    }
+
+
+                    // lzma .dat
+                    using (var istream = info.OpenRead())
+                    using (var ostream = File.OpenWrite("temp.dat"))
+                        Helper.DecompressFileLzma(istream, ostream);
+
+                    // lzma .bin
+                    using (var istream = File.OpenRead(Path.ChangeExtension(info.FullName, ".bin")))
+                    using (var ostream = File.OpenWrite("temp.bin"))
+                        Helper.DecompressFileLzma(istream, ostream);
+
+                    using (var istream = File.OpenText("temp.dat"))
+                    using (var bstream = File.OpenRead("temp.bin"))
+                    using (var stream = File.OpenWrite(output))
+                    using (var ostream = new StreamWriter(stream))
+                    {
+                        var algorithm = new BlockyAlgorithm();
+                        var converter = new CompressionDataConverter();
+                        using (var marer = new MarerReader<OfcNumber>(istream, ostream, algorithm, converter, bstream))
+                            marer.Do();
+                    }
+                    File.Delete("temp.dat");
+                    File.Delete("temp.bin");
+                    Console.WriteLine($"Successfully decompressed the specified file to: '{output}'");
+                }
+                else if (info.Extension == ".datu")
+                {
+                    using (var istream = info.OpenRead())
+                    using (var ostream = File.OpenWrite(output))
+                        Helper.DecompressFileLzma(istream, ostream);
+                    Console.WriteLine($"Successfully decompressed to '{output}'");
+                }
+                else
+                {
+                    Console.WriteLine("The target file must have a.dat or.datu extention.");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Unexpected error.");
+                Console.WriteLine();
+                Console.WriteLine(ex);
+                return false;
+            }
+            return true;
         }
 
         private static bool DecompressDirectory(string input, [CanBeNull] string output, bool force, bool recursive)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (output == null) throw new ArgumentNullException(nameof(output));
+
+                if (!Directory.Exists(input))
+                {
+                    Console.WriteLine("Can not find the specified directory.");
+                    return false;
+                }
+
+                input = Path.GetFullPath(input);
+                var option = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+                int z = 0, r = 0;
+                foreach (var file in Directory.EnumerateFiles(input, "*.dat", option).Union(Directory.EnumerateFiles(input, "*.datu", option)))
+                {
+                    z++;
+                    try
+                    {
+                        var info = new FileInfo(file);
+                        var outp = Path.Combine(output, file.Substring(input.Length));
+                        outp = Path.ChangeExtension(outp, "");
+                        Directory.CreateDirectory(Path.GetDirectoryName(outp));
+                        if (DecompressFile(file, outp, force))
+                            r++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }
+                Console.WriteLine($"Directory successfully decompress [{r}/{z} files]");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Unexpected error.");
+                Console.WriteLine();
+                Console.WriteLine(ex);
+                return false;
+            }
+            return true;
         }
 
         /*
