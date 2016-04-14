@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using JetBrains.Annotations;
 using OfcAlgorithm.Blocky.Method;
 using OfcAlgorithm.Blocky.Method.FloatSimmilar;
 using OfcAlgorithm.Blocky.Method.NumbersNoExp;
@@ -18,21 +19,31 @@ namespace OfcAlgorithm.Blocky
     {
         private readonly StreamBitReader _bitReader;
         private readonly IReporter<OfcNumber> _writer;
-        private readonly BlockyMetadata _metadata;
-
+        public readonly BlockyMetadata Metadata;
         private readonly DecompressionMethod[] _decompressionMethods = new DecompressionMethod[(int)Methods.Count];
+        private readonly IOfcNumberWriter _numberWriter;
 
-        public BlockyDecompression(Stream reader, IReporter<OfcNumber> target)
+        public BlockyDecompression([NotNull]Stream reader, [NotNull]IReporter<OfcNumber> target) : this(reader)
+        {
+            _writer = target;
+            _numberWriter = this;
+        }
+
+        public BlockyDecompression([NotNull]Stream reader, [NotNull]IOfcNumberWriter writer) : this(reader)
+        {
+            _numberWriter = writer;
+        }
+
+        protected BlockyDecompression([NotNull]Stream reader)
         {
             _bitReader = new StreamBitReader(reader);
-            _writer = target;
-            _metadata = BlockyMetadata.FromBitStream(_bitReader);
-            
-            _decompressionMethods[(int)Methods.PatternSame] = new PatternSameDecompression(_metadata);
-            _decompressionMethods[(int)Methods.PatternPingPong] = new PatternPingPongDecompression(_metadata);
-            _decompressionMethods[(int)Methods.FloatSimmilar] = new FloatSimmilarDecompression(_metadata);
-            _decompressionMethods[(int)Methods.NumbersNoExp] = new NumbersNoExpDecompression(_metadata);
-            _decompressionMethods[(int)Methods.PatternOffset] = new PatternOffsetDecompression(_metadata);
+            Metadata = BlockyMetadata.FromBitStream(_bitReader);
+
+            _decompressionMethods[(int)Methods.PatternSame] = new PatternSameDecompression(Metadata);
+            _decompressionMethods[(int)Methods.PatternPingPong] = new PatternPingPongDecompression(Metadata);
+            _decompressionMethods[(int)Methods.FloatSimmilar] = new FloatSimmilarDecompression(Metadata);
+            _decompressionMethods[(int)Methods.NumbersNoExp] = new NumbersNoExpDecompression(Metadata);
+            _decompressionMethods[(int)Methods.PatternOffset] = new PatternOffsetDecompression(Metadata);
 
             if (_bitReader.ReadByte(1) > 0) // use huffman
             {
@@ -40,22 +51,23 @@ namespace OfcAlgorithm.Blocky
             }
         }
 
+
         public void Decompress()
         {
             var valueCount = 0;
-            while (valueCount < _metadata.ValueCount)
+            while (valueCount < Metadata.ValueCount)
             {
                 if (_bitReader.ReadByte(1) > 0) // isBlock
                 {
-                    var block = DecompressionMethod.ReadDefaultBlockHeader(_bitReader, _metadata);
+                    var block = DecompressionMethod.ReadDefaultBlockHeader(_bitReader, Metadata);
                     var method = GetMethodForBlock(block); // Get decompressor class for block type
                     //((DummyReporter)_writer).FileStream.WriteLine(method.GetType().Name + " Start");
-                    valueCount += method.Read(this, block, _bitReader);
+                    valueCount += method.Read(_numberWriter, block, _bitReader);
                     //((DummyReporter)_writer).FileStream.WriteLine(method.GetType().Name + " End");
                 }
                 else
                 {
-                    Write(DecompressionMethod.ReadSingleValueWithoutControlBit(_bitReader, _metadata));
+                    _numberWriter.Write(DecompressionMethod.ReadSingleValueWithoutControlBit(_bitReader, Metadata));
                     valueCount++;
                 }
             }
