@@ -1,7 +1,4 @@
-﻿
-#define DBGIN
-
-namespace Ofc
+﻿namespace Ofc
 {
     using System;
     using System.IO;
