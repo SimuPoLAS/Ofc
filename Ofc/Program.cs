@@ -40,11 +40,11 @@
             argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Displays this help message."));
             argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Displays the current version of the tool."));
 
-            argumentParser.NewLayer(CommandLineLayers.CompressFile).AddCommand(e => e.Name("compress")).AddCommand(e => e.Name("file").Description("Compresses the given file.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Description("Force mode."));
-            argumentParser.NewLayer(CommandLineLayers.CompressDirectory).AddCommand(e => e.Name("compress")).AddCommand(e => e.Name("directory").Description("Compresses the given directory.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Optional().Visibility(ArgumentVisiblility.Usage)).AddOption(e => e.SetShortName('r').Description("Enables recursion on directories.").Optional());
+            argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output", true).Option('f').Option('r');
+            argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output", true);
 
-            argumentParser.NewLayer(CommandLineLayers.DecompressFile).AddCommand(e => e.Name("decompress")).AddCommand(e => e.Name("file").Description("Decompresses the specified file.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Visibility(ArgumentVisiblility.Usage));
-            argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).AddCommand(e => e.Name("decompress")).AddCommand(e => e.Name("directory").Description("Decompresses the specified directory.")).AddArgument(e => e.SetName("input")).AddArgument(e => e.SetName("output").Optional()).AddOption(e => e.SetShortName('f').Visibility(ArgumentVisiblility.Usage)).AddOption(e => e.SetShortName('r').Visibility(ArgumentVisiblility.Usage));
+            argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output", true).Option('f').Option('r');
+            argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompresses the specified compressed file or set of files.").Argument("input").Argument("output", true).Option('f');
 
             // parse the arguments
             /*
@@ -105,7 +105,7 @@
 #endif
         }
 
-        private static bool CompressFile(string input, [CanBeNull] string output, bool force)
+        private static bool CompressFile(string input, string output, bool force)
         {
             try
             {
@@ -304,7 +304,7 @@
         }
 
 
-        private static bool DecompressFile(string input, [CanBeNull] string output, bool force)
+        private static bool DecompressFile(string input, string output, bool force)
         {
             try
             {
@@ -377,7 +377,7 @@
             return true;
         }
 
-        private static bool DecompressDirectory(string input, [CanBeNull] string output, bool force, bool recursive)
+        private static bool DecompressDirectory(string input, string output, bool force, bool recursive)
         {
             try
             {
