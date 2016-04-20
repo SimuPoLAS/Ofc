@@ -1,8 +1,12 @@
-﻿namespace Ofc
+﻿#define DBGIN
+
+namespace Ofc
 {
     using System;
     using System.IO;
     using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
     using JetBrains.Annotations;
     using LZMA.Core.Helper;
     using Ofc.CommandLine;
@@ -40,7 +44,7 @@
             argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Displays this help message."));
             argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Displays the current version of the tool."));
 
-            argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output", true).Option('f').Option('r');
+            argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output", true).Option('f').Option('r').Option('p');
             argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output", true);
 
             argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output", true).Option('f').Option('r');
@@ -84,7 +88,7 @@
                             DecompressFile(result[0], result[1], result['f']);
                             break;
                         case CommandLineLayers.DecompressDirectory:
-                            DecompressDirectory(result[0], result[1], result['f'], result['r']);
+                            DecompressDirectory(result[0], result[1], result['f'], result['r'], result['p']);
                             break;
                     }
                 }
@@ -377,7 +381,7 @@
             return true;
         }
 
-        private static bool DecompressDirectory(string input, string output, bool force, bool recursive)
+        private static bool DecompressDirectory(string input, string output, bool force, bool recursive, bool para)
         {
             try
             {
@@ -392,23 +396,46 @@
                 input = Path.GetFullPath(input);
                 var option = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
                 int z = 0, r = 0;
-                foreach (var file in Directory.EnumerateFiles(input, "*.dat", option).Union(Directory.EnumerateFiles(input, "*.datu", option)))
+                
+                if (para)
                 {
-                    z++;
-                    try
+                    Parallel.ForEach(Directory.EnumerateFiles(input, "*.dat", option).Union(Directory.EnumerateFiles(input, "*.datu", option)), (e) =>
                     {
-                        var info = new FileInfo(file);
-                        var outp = Path.Combine(output, file.Substring(input.Length));
-                        outp = Path.ChangeExtension(outp, "");
-                        Directory.CreateDirectory(Path.GetDirectoryName(outp));
-                        if (DecompressFile(file, outp, force))
-                            r++;
-                    }
-                    catch (Exception ex)
+                        Interlocked.Increment(ref z);
+                        try
+                        {
+                            var outp = Path.Combine(output, e.Substring(input.Length));
+                            outp = Path.ChangeExtension(outp, "");
+                            Directory.CreateDirectory(Path.GetDirectoryName(outp));
+                            if (DecompressFile(e, outp, true))
+                                Interlocked.Increment(ref z);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
+                    });
+                }
+                else
+                {
+                    foreach (var file in Directory.EnumerateFiles(input, "*.dat", option).Union(Directory.EnumerateFiles(input, "*.datu", option)))
                     {
-                        Console.WriteLine(ex);
+                        z++;
+                        try
+                        {
+                            var outp = Path.Combine(output, file.Substring(input.Length));
+                            outp = Path.ChangeExtension(outp, "");
+                            Directory.CreateDirectory(Path.GetDirectoryName(outp));
+                            if (DecompressFile(file, outp, true))
+                                r++;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
                     }
                 }
+
                 Console.WriteLine($"Directory successfully decompress [{r}/{z} files]");
             }
             catch (Exception ex)
