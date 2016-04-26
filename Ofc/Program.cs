@@ -26,89 +26,96 @@ namespace Ofc
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
-            BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
+            try
+            {
+                BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
 
-            // initiate the parser
-            IArgumentParser<CommandLineLayers> argumentParser = new ArgumentParser<CommandLineLayers>();
-            argumentParser.Description = "A command line tool for compressing Open Foam files.";
-            argumentParser.Name = "ofc.exe";
+                // initiate the parser
+                IArgumentParser<CommandLineLayers> argumentParser = new ArgumentParser<CommandLineLayers>();
+                argumentParser.Description = "A command line tool for compressing Open Foam files.";
+                argumentParser.Name = "ofc.exe";
 
-            // add parser definitions
-            argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Displays this help message."));
-            argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Displays the current version of the tool."));
+                // add parser definitions
+                argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Displays this help message."));
+                argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Displays the current version of the tool."));
 
-            argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output", true).Option('f').Option('r').Option('p');
-            argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output", true);
+                argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output", true).Option('f').Option('r').Option('p');
+                argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output", true);
 
-            argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output", true).Option('f').Option('r').Option('p');
-            argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompresses the specified compressed file or set of files.").Argument("input").Argument("output", true).Option('f');
+                argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output", true).Option('f').Option('r').Option('p');
+                argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompresses the specified compressed file or set of files.").Argument("input").Argument("output", true).Option('f');
 
-            argumentParser.NewOption().SetShortName('f').Description("Enables force mode.");
-            argumentParser.NewOption().SetShortName('r').Description("Enables recursive compression/decompression.");
-            argumentParser.NewOption().SetShortName('p').Description("Enables parallel compression/decompression.");
+                argumentParser.NewOption().SetShortName('f').Description("Enables force mode.");
+                argumentParser.NewOption().SetShortName('r').Description("Enables recursive compression/decompression.");
+                argumentParser.NewOption().SetShortName('p').Description("Enables parallel compression/decompression.");
 
-            // parse the arguments
-            /*
+                // parse the arguments
+                /*
             
             /*/
 #if DBGIN
-            while (true)
-            {
-                Console.Write(" > ");
-                var result = argumentParser.Parse(Console.ReadLine() ?? "");
+                while (true)
+                {
+                    Console.Write(" > ");
+                    var result = argumentParser.Parse(Console.ReadLine() ?? "");
 #else
             var result = argumentParser.Parse(args);
 #endif
 
-                var ok = false;
-                // check if the parser succeeded 
-                if (result.Success)
-                {
-                    ok = true;
-                    var manager = new OfcActionManager();
-                    switch (result.LayerId)
+                    var ok = false;
+                    // check if the parser succeeded 
+                    if (result.Success)
                     {
-                        case CommandLineLayers.Help:
-                            Console.Write(argumentParser.GenerateHelp());
-                            break;
-                        case CommandLineLayers.Version:
-                            Console.WriteLine($"{argumentParser.Name} [v1.0.000]");
-                            break;
+                        ok = true;
+                        var manager = new OfcActionManager();
+                        switch (result.LayerId)
+                        {
+                            case CommandLineLayers.Help:
+                                Console.Write(argumentParser.GenerateHelp());
+                                break;
+                            case CommandLineLayers.Version:
+                                Console.WriteLine($"{argumentParser.Name} [v1.0.000]");
+                                break;
 
-                        case CommandLineLayers.CompressFile:
-                            manager.AddFile(result[0], result[1]);
-                            manager.Handle();
-                            break;
-                        case CommandLineLayers.CompressDirectory:
-                            manager.AddDirectory(result[0], result[1], result['r']);
-                            manager.Override = result['f'];
-                            manager.Parallel = result['p'];
-                            manager.Handle();
-                            break;
+                            case CommandLineLayers.CompressFile:
+                                manager.AddFile(result[0], result[1]);
+                                manager.Handle();
+                                break;
+                            case CommandLineLayers.CompressDirectory:
+                                manager.AddDirectory(result[0], result[1], result['r']);
+                                manager.Override = result['f'];
+                                manager.Parallel = result['p'];
+                                manager.Handle();
+                                break;
 
-                        case CommandLineLayers.DecompressFile:
-                            DecompressFile(result[0], result[1], result['f']);
-                            break;
-                        case CommandLineLayers.DecompressDirectory:
-                            DecompressDirectory(result[0], result[1], result['f'], result['r'], result['p']);
-                            break;
+                            case CommandLineLayers.DecompressFile:
+                                DecompressFile(result[0], result[1], result['f']);
+                                break;
+                            case CommandLineLayers.DecompressDirectory:
+                                DecompressDirectory(result[0], result[1], result['f'], result['r'], result['p']);
+                                break;
+                        }
                     }
-                }
 
-                // Write an error message
-                if (!ok)
-                {
-                    Console.WriteLine("Invalid arguments.\n");
-                    Console.Write(argumentParser.GenerateHelp());
-                }
+                    // Write an error message
+                    if (!ok)
+                    {
+                        Console.WriteLine("Invalid arguments.\n");
+                        Console.Write(argumentParser.GenerateHelp());
+                    }
 
 #if DBGIN
-                Console.ReadLine();
+                    Console.ReadLine();
 #if DNX451
-                Console.Clear();
+                    Console.Clear();
+#endif
+                }
 #endif
             }
-#endif
+            catch (Exception ex)
+            {
+                Console.WriteLine("fatal application error: \n" + ex);
+            }
         }
 
         private static bool DecompressFile(string input, string output, bool force)
