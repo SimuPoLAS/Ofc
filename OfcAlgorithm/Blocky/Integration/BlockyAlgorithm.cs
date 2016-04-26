@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using OfcAlgorithm.Blocky.Method;
 using OfcAlgorithm.Integration;
 using OfcCore;
 
@@ -28,9 +29,30 @@ namespace OfcAlgorithm.Blocky.Integration
         }
 
 
-        public void Decompress(IFile file, IConfiguaration config, Stream reader, IReporter<OfcNumber> reporter)
+        public void Decompress(IFile file, IConfiguaration config, Stream reader, IReporter<OfcNumber> reporter, int width)
         {
-            new BlockyDecompression(reader, reporter).Decompress();
+            if (width == 0)
+            {
+                new BlockyDecompression(reader, reporter).Decompress();
+                return;
+            }
+
+            var decomp = new BlockyNumberSaver[width];
+
+            for (var i = 0; i < decomp.Length; i++)
+            {
+                decomp[i] = new BlockyNumberSaver();
+                var blockyDecomp = new BlockyDecompression(reader, decomp[i]);
+                decomp[i].Initialize(blockyDecomp.Metadata.ValueCount);
+                blockyDecomp.Decompress();
+            }
+
+            var len = decomp[0].Values.Length;
+
+            for (var i = 0; i < len; i++)
+                for (var j = 0; j < decomp.Length; j++)
+                    reporter.Report(decomp[j].Values[i]);
+
         }
 
         public bool SupportsDimension(int width, int elements)

@@ -32,7 +32,7 @@ namespace OfcAlgorithm.Zetty
             return new RounderReporter(output, _config);
         }
 
-        public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<OfcNumber> reporter)
+        public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<OfcNumber> reporter, int width)
         {
             throw new NotImplementedException();
         }

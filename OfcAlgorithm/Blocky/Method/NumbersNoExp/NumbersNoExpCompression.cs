@@ -57,13 +57,16 @@ namespace OfcAlgorithm.Blocky.Method.NumbersNoExp
             else
                 writer.WriteByte(0, 1);
 
-            if (block.AbsoluteSign)
+            if (!Context.Metadata.IsAbsolute)
             {
-                writer.WriteByte(1, 1);
-                writer.WriteByte(block.IsSignNegative ? (byte)1 : (byte)0, 1);
+                if (block.AbsoluteSign)
+                {
+                    writer.WriteByte(1, 1);
+                    writer.WriteByte(block.IsSignNegative ? (byte)1 : (byte)0, 1);
+                }
+                else
+                    writer.WriteByte(0, 1);
             }
-            else
-                writer.WriteByte(0, 1);
 
             var end = block.Index + block.Length;
             for (var i = block.Index; i < end; i++)

@@ -54,6 +54,8 @@ namespace OfcAlgorithm.Blocky.Method
             var value = new OfcNumber();
             if (!metadata.IsAbsolute)
                 value.IsNegative = reader.ReadByte(1) > 0;
+            else
+                value.IsNegative = metadata.IsNegative;
             value.Number = (long)reader.Read(metadata.MaxNeededBitsNumber);
             var isExpNegative = reader.ReadByte(1) > 0;
             value.Exponent = (short)reader.Read(metadata.MaxNeededBitsExponent); // Bug: Potentually reading exp even though NoExp is set. Same in writing method! (Ineffizient)

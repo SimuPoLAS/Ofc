@@ -19,18 +19,20 @@ namespace OfcAlgorithm.Blocky.Method.FloatSimmilar
             }
 
             // ReSharper disable once AssignmentInConditionalExpression
-            if (block.AbsoluteSign = reader.ReadByte(1) > 0)
-            {
-                block.IsSignNegative = reader.ReadByte(1) > 0;
-            }
+            if (!Metadata.IsAbsolute)
+                if (block.AbsoluteSign = reader.ReadByte(1) > 0)
+                {
+                    block.IsSignNegative = reader.ReadByte(1) > 0;
+                }
 
-            var isNegative = block.AbsoluteSign && block.IsSignNegative;
+            var hasAbsoluteSign = block.AbsoluteSign || Metadata.IsAbsolute;
+            var isNegative = block.AbsoluteSign && block.IsSignNegative || Metadata.IsAbsolute && Metadata.IsNegative;
 
             for (var i = 0; i < block.Length; i++)
             {
                 var num = new OfcNumber();
 
-                if (!block.AbsoluteSign)
+                if (!hasAbsoluteSign)
                     isNegative = reader.ReadByte(1) > 0;
 
                 num.Number = ((long)reader.Read(Metadata.MaxNeededBitsNumber)) * (isNegative ? -1 : 1);
