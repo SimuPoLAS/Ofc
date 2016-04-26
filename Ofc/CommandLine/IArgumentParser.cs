@@ -36,6 +36,12 @@
         IArgumentLayer NewLayer(T id);
 
         /// <summary>
+        ///     Adds a new option to the parser and returns a builder for it.
+        /// </summary>
+        /// <returns>The generated option.</returns>
+        IOptionBuilder NewOption();
+
+        /// <summary>
         ///     Parses the given input string with the registered layers and returns a parse result.
         /// </summary>
         /// <param name="input">A string, which is formatted as if it would be passed over with the command line.</param>

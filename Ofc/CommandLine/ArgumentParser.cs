@@ -20,6 +20,7 @@ namespace Ofc.CommandLine
     internal class ArgumentParser<T> : IArgumentParser<T>
     {
         private StringBuilder _builder = new StringBuilder();
+        private List<Option> _generalOptions = new List<Option>();
         private Dictionary<T, Layer> _layers = new Dictionary<T, Layer>();
 
 
@@ -94,7 +95,7 @@ namespace Ofc.CommandLine
             }
 
             // Join long options and short options, only select the option class and make it distinct
-            var options = _layers.Values.SelectMany(e => e.Options).Distinct().Where(e => e.OptionVisibility.HasFlag(ArgumentVisiblility.Description));
+            var options = _layers.Values.SelectMany(e => e.Options).Union(_generalOptions).Distinct().Where(e => e.OptionVisibility.HasFlag(ArgumentVisiblility.Description));
             if (options.Any())
             {
                 // Select a pair of items instead of the hole option class
@@ -120,7 +121,7 @@ namespace Ofc.CommandLine
                 // Write the header
                 _builder.AppendLine("Options:");
                 // Write all options and their description
-                foreach (var option in selected)
+                foreach (var option in selected.Where(e => !string.IsNullOrWhiteSpace(e.Item2)))
                 {
                     _builder.Append("  ");
                     _builder.Append(option.Item1.PadRight(dist));
@@ -148,6 +149,17 @@ namespace Ofc.CommandLine
             var layer = new Layer();
             _layers.Add(id, layer);
             return layer;
+        }
+
+        /// <summary>
+        ///     Adds a new option to the parser and returns a builder for it.
+        /// </summary>
+        /// <returns>The generated option.</returns>
+        public IOptionBuilder NewOption()
+        {
+            var opt = new Option();
+            _generalOptions.Add(opt);
+            return opt;
         }
 
         /// <summary>

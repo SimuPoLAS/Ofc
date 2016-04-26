@@ -50,6 +50,10 @@ namespace Ofc
             argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output", true).Option('f').Option('r');
             argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompresses the specified compressed file or set of files.").Argument("input").Argument("output", true).Option('f');
 
+            argumentParser.NewOption().SetShortName('f').Description("Enables force mode.");
+            argumentParser.NewOption().SetShortName('r').Description("Enables recursive compression/decompression.");
+            argumentParser.NewOption().SetShortName('p').Description("Enables parallel compression/decompression.");
+
             // parse the arguments
             /*
             
