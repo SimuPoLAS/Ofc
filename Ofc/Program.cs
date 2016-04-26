@@ -18,12 +18,6 @@
     internal static class Program
     {
         /// <summary>
-        ///     Place where all the logs will be stored.
-        /// </summary>
-        private const string Logs = "logs/";
-
-
-        /// <summary>
         ///     Main entrypoint for the application.
         /// </summary>
         /// <param name="args"></param>
@@ -40,10 +34,10 @@
             argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Displays this help message."));
             argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Displays the current version of the tool."));
 
-            argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output", true).Option('f').Option('r');
+            argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output", true).Option('f').Option('r').Option('p');
             argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output", true);
 
-            argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output", true).Option('f').Option('r');
+            argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output", true).Option('f').Option('r').Option('p');
             argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompresses the specified compressed file or set of files.").Argument("input").Argument("output", true).Option('f');
 
             // parse the arguments
@@ -77,14 +71,14 @@
                             CompressFile(result[0], result[1], result['f']);
                             break;
                         case CommandLineLayers.CompressDirectory:
-                            CompressDirectory(result[0], result[1], result['f'], result['r']);
+                            CompressDirectory(result[0], result[1], result['f'], result['r'], result['p']);
                             break;
 
                         case CommandLineLayers.DecompressFile:
                             DecompressFile(result[0], result[1], result['f']);
                             break;
                         case CommandLineLayers.DecompressDirectory:
-                            DecompressDirectory(result[0], result[1], result['f'], result['r']);
+                            DecompressDirectory(result[0], result[1], result['f'], result['r'], result['p']);
                             break;
                     }
                 }
@@ -225,7 +219,7 @@
             return true;
         }
 
-        private static bool CompressDirectory(string input, string output, bool force, bool recursive)
+        private static bool CompressDirectory(string input, string output, bool force, bool recursive, bool parallel)
         {
             try
             {
@@ -372,7 +366,7 @@
             return true;
         }
 
-        private static bool DecompressDirectory(string input, string output, bool force, bool recursive)
+        private static bool DecompressDirectory(string input, string output, bool force, bool recursive, bool parallel)
         {
             try
             {
