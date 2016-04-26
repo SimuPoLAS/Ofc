@@ -229,6 +229,9 @@
         {
             try
             {
+                input = Path.GetFullPath(input);
+                output = Path.GetFullPath(output);
+
                 // check if there is an input file
                 if (!Directory.Exists(input))
                 {
@@ -243,25 +246,17 @@
                     return false;
                 }
 
-                if (output == null)
-                    output = "/";
-
                 // start compression
                 try
                 {
                     Directory.CreateDirectory(output);
-
-                    // base (root) folder
-                    var rUri = new Uri(input);
 
                     Console.WriteLine($"# {input}");
 
                     // Start paralell work
                     foreach (var e in Directory.EnumerateFiles(input, "*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
                     {
-                        var mUri = new Uri(e);
-                        var relative = rUri.MakeRelativeUri(mUri).ToString();
-
+                        var relative = e.Substring(input.Length);
                         Console.WriteLine($"\n## {relative} [{e.Length}B]");
 
                         try
