@@ -2,9 +2,8 @@
 {
     using System;
     using System.IO;
-    using OfcAlgorithm.Integration;
-    using OfcCore;
-    using OfcCore.Configurations;
+    using Ofc.Algorithm.Integration;
+    using Ofc.Core;
 
     [Obsolete]
     internal class AlgorithmHook : IParserHook<string>

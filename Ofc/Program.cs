@@ -8,12 +8,12 @@ namespace Ofc
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using LZMA.Core.Helper;
+    using Ofc.Algorithm.Blocky.Integration;
+    using Ofc.Algorithm.Integration;
     using Ofc.CLI;
     using Ofc.IO;
+    using Ofc.LZMA.Helper;
     using Ofc.Util;
-    using OfcAlgorithm.Blocky.Integration;
-    using OfcAlgorithm.Integration;
 
     /// <summary>
     ///     Contains the main entrypoint for the application and the all the CLI functionality.

@@ -2,12 +2,12 @@
 {
     using System;
     using System.IO;
-    using LZMA.Core.Helper;
+    using Ofc.Algorithm.Blocky.Integration;
+    using Ofc.Algorithm.Integration;
     using Ofc.IO;
+    using Ofc.LZMA.Helper;
     using Ofc.Parsing;
     using Ofc.Parsing.Hooks;
-    using OfcAlgorithm.Blocky.Integration;
-    using OfcAlgorithm.Integration;
 
     internal class CompressAction : IOfcAction
     {

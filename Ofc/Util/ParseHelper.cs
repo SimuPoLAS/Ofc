@@ -1,7 +1,4 @@
-﻿using OfcAlgorithm.Zetty;
-using OfcCore;
-
-namespace Ofc.Util
+﻿namespace Ofc.Util
 {
     using System;
     using System.IO;
@@ -9,10 +6,6 @@ namespace Ofc.Util
     using Ofc.IO;
     using Ofc.Parsing;
     using Ofc.Parsing.Hooks;
-    using OfcAlgorithm.Blocky.Integration;
-    using OfcAlgorithm.Integration.Dummy;
-    using OfcAlgorithm.Rounding;
-    using OfcCore.Configurations;
 
     /// <summary>
     ///     Provides a set of method which speed up general parsing tasks.

@@ -4,9 +4,9 @@
     using System.Collections.Generic;
     using System.IO;
     using JetBrains.Annotations;
+    using Ofc.Core;
+    using Ofc.Core.Configurations;
     using Ofc.Parsing;
-    using OfcCore;
-    using OfcCore.Configurations;
 
     internal class MarerReader<T> : IDisposable
     {

@@ -3,8 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using OfcCore;
-    using OfcCore.Configurations;
+    using Ofc.Core;
+    using Ofc.Core.Configurations;
 
     internal class MarerHook<T> : IParserHook<string>
     {
