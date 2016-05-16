@@ -1,4 +1,4 @@
-﻿namespace Ofc.CommandLine
+﻿namespace Ofc.CLI
 {
     using JetBrains.Annotations;
 

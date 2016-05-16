@@ -9,7 +9,7 @@ namespace Ofc
     using System.Threading;
     using System.Threading.Tasks;
     using LZMA.Core.Helper;
-    using Ofc.CommandLine;
+    using Ofc.CLI;
     using Ofc.IO;
     using Ofc.Util;
     using OfcAlgorithm.Blocky.Integration;

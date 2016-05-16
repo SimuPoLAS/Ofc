@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using OfcAlgorithm.Integration;
-
-namespace OfcAlgorithm.Blocky.Method
+﻿namespace OfcAlgorithm.Blocky
 {
+    using OfcAlgorithm.Integration;
+
     public class BlockyNumberSaver : IOfcNumberWriter
     {
         private int _index;
