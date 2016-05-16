@@ -85,7 +85,7 @@
         }
 
 
-        private class MarerReporter<T> : IReporter<T>
+        private class MarerReporter<TV> : IReporter<TV>
         {
             public IConfiguaration Configuaration { get; }
 
@@ -104,10 +104,10 @@
             private int _position;
 
             private StreamWriter _writer;
-            private IConverter<T> _converter; 
+            private IConverter<TV> _converter; 
 
 
-            public MarerReporter(StreamWriter writer, IConverter<T> converter)
+            public MarerReporter(StreamWriter writer, IConverter<TV> converter)
             {
                 _writer = writer;
                 _converter = converter;
@@ -127,7 +127,7 @@
             {
             }
 
-            public void Report(T value)
+            public void Report(TV value)
             {
                 _buffer[_position++] = _converter.ToString(value);
                 if (_position == _buffer.Length)
@@ -148,7 +148,7 @@
                 }
             }
 
-            public void Report(T[] values, int offset, int amount)
+            public void Report(TV[] values, int offset, int amount)
             {
                 for (var i = offset; i < offset + amount; i++)
                     Report(values[i]);

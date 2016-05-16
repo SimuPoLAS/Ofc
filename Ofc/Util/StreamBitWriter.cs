@@ -37,7 +37,7 @@
         public void WriteByte(byte data, byte count)
         {
             Write(data, count);
-            return;
+            /* return; // bug whats up with this?
 #if DEBUG
             if (((long)data).GetNeededBits() > count)
             {
@@ -54,7 +54,7 @@
             _buffer |= (byte)((data & Utility.SectionMasks[bitsLeft]) << _offset);
             Stream.WriteByte(_buffer);
             _buffer = (byte)(data >> bitsLeft);
-            _offset = (byte)((bitsLeft + count) % 8);
+            _offset = (byte)((bitsLeft + count) % 8); //*/
         }
 
         public void Flush()

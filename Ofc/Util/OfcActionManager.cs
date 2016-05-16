@@ -83,7 +83,7 @@
                 stage = "DONE";
                 result = work.Action.Result;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 result = OfcActionResult.Fatal;
             }

@@ -27,7 +27,6 @@
         public bool Force { get; set; }
 
 
-        private string _basePath;
         private string _sourcePath;
         private string _binaryPath;
         private string _textualPath;
@@ -40,12 +39,11 @@
 
         public CompressAction(string basePath, string sourcePath, string binaryPath, string textualPath, string lzmaPath)
         {
-            _basePath = basePath;
             _sourcePath = sourcePath;
             _binaryPath = binaryPath;
             _textualPath = textualPath;
             _lzmaPath = lzmaPath;
-            _relativePath = _sourcePath.StartsWith(_basePath) ? _sourcePath.Substring(_basePath.Length) : _sourcePath;
+            _relativePath = _sourcePath.StartsWith(basePath) ? _sourcePath.Substring(basePath.Length) : _sourcePath;
         }
 
 
@@ -193,6 +191,7 @@
         private void Throw<T>(string message) where T : Exception, new()
         {
             Message = message;
+            _faulty = true;
             throw new T();
         }
     }

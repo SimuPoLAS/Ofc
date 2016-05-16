@@ -1,13 +1,11 @@
-﻿
-#define DBGIN
-
-namespace Ofc
+﻿namespace Ofc
 {
     using System;
     using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using JetBrains.Annotations;
     using Ofc.Algorithm.Blocky.Integration;
     using Ofc.Algorithm.Integration;
     using Ofc.CLI;
@@ -18,6 +16,7 @@ namespace Ofc
     /// <summary>
     ///     Contains the main entrypoint for the application and the all the CLI functionality.
     /// </summary>
+    [UsedImplicitly]
     internal static class Program
     {
         /// <summary>
@@ -50,67 +49,49 @@ namespace Ofc
                 argumentParser.NewOption().SetShortName('p').Description("Enables parallel compression/decompression.");
 
                 // parse the arguments
-                /*
-            
-            /*/
-#if DBGIN
-                while (true)
+                var result = argumentParser.Parse(args);
+
+                var ok = false;
+                // check if the parser succeeded 
+                if (result.Success)
                 {
-                    Console.Write(" > ");
-                    var result = argumentParser.Parse(Console.ReadLine() ?? "");
-#else
-            var result = argumentParser.Parse(args);
-#endif
-
-                    var ok = false;
-                    // check if the parser succeeded 
-                    if (result.Success)
+                    ok = true;
+                    var manager = new OfcActionManager();
+                    switch (result.LayerId)
                     {
-                        ok = true;
-                        var manager = new OfcActionManager();
-                        switch (result.LayerId)
-                        {
-                            case CommandLineLayers.Help:
-                                Console.Write(argumentParser.GenerateHelp());
-                                break;
-                            case CommandLineLayers.Version:
-                                Console.WriteLine($"{argumentParser.Name} [v1.0.000]");
-                                break;
+                        case CommandLineLayers.Help:
+                            Console.Write(argumentParser.GenerateHelp());
+                            break;
+                        case CommandLineLayers.Version:
+                            Console.WriteLine($"{argumentParser.Name} [v1.0.000]");
+                            break;
 
-                            case CommandLineLayers.CompressFile:
-                                manager.AddFile(result[0], result[1]);
-                                manager.Handle();
-                                break;
-                            case CommandLineLayers.CompressDirectory:
-                                manager.AddDirectory(result[0], result[1], result['r']);
-                                manager.Override = result['f'];
-                                manager.Parallel = result['p'];
-                                manager.Handle();
-                                break;
+                        case CommandLineLayers.CompressFile:
+                            manager.AddFile(result[0], result[1]);
+                            manager.Handle();
+                            break;
+                        case CommandLineLayers.CompressDirectory:
+                            manager.AddDirectory(result[0], result[1], result['r']);
+                            manager.Override = result['f'];
+                            manager.Parallel = result['p'];
+                            manager.Handle();
+                            break;
 
-                            case CommandLineLayers.DecompressFile:
-                                DecompressFile(result[0], result[1], result['f']);
-                                break;
-                            case CommandLineLayers.DecompressDirectory:
-                                DecompressDirectory(result[0], result[1], result['f'], result['r'], result['p']);
-                                break;
-                        }
+                        case CommandLineLayers.DecompressFile:
+                            DecompressFile(result[0], result[1], result['f']);
+                            break;
+                        case CommandLineLayers.DecompressDirectory:
+                            DecompressDirectory(result[0], result[1], result['f'], result['r'], result['p']);
+                            break;
                     }
-
-                    // Write an error message
-                    if (!ok)
-                    {
-                        Console.WriteLine("Invalid arguments.\n");
-                        Console.Write(argumentParser.GenerateHelp());
-                    }
-
-#if DBGIN
-                    Console.ReadLine();
-#if DNX451
-                    Console.Clear();
-#endif
                 }
-#endif
+
+                // Write an error message
+                if (!ok)
+                {
+                    Console.WriteLine("Invalid arguments.\n");
+                    Console.Write(argumentParser.GenerateHelp());
+                }
             }
             catch (Exception ex)
             {
@@ -118,6 +99,7 @@ namespace Ofc
             }
         }
 
+        [Obsolete]
         private static bool DecompressFile(string input, string output, bool force)
         {
             try
@@ -191,6 +173,7 @@ namespace Ofc
             return true;
         }
 
+        [Obsolete]
         private static bool DecompressDirectory(string input, string output, bool force, bool recursive, bool para)
         {
             try

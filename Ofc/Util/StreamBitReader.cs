@@ -12,14 +12,21 @@
         public StreamBitReader(Stream stream)
         {
             _stream = stream;
-            _buffer = (byte)_stream.ReadByte();
+            _buffer = (byte) _stream.ReadByte();
+        }
+
+        private byte ReadUnalignedByte()
+        {
+            var value = _stream.ReadByte();
+            if (value == -1) throw new EndOfStreamException();
+            return (byte) value;
         }
 
         public ulong Read(byte count)
         {
             if (_offset == 8)
             {
-                _buffer = (byte)_stream.ReadByte();
+                _buffer = ReadUnalignedByte();
                 _offset = 0;
             }
             ulong data = 0;
@@ -31,39 +38,27 @@
                 {
                     data |= (_buffer & Utility.SectionMasks[count]) << offset;
                     _offset += count;
-                    _buffer = (byte)(_buffer >> count);
+                    _buffer = (byte) (_buffer >> count);
                     return data;
                 }
-                data |= ((ulong)_buffer << offset);
-                count -= (byte)bitsLeft;
+                data |= (ulong) _buffer << offset;
+                count -= (byte) bitsLeft;
                 offset += bitsLeft;
                 _offset = 0;
-                _buffer = (byte)_stream.ReadByte();
+                _buffer = ReadUnalignedByte();
             } while (count > 0);
             return data;
         }
 
-        [Obsolete]
         public byte ReadByte(byte count)
         {
-            return (byte)Read(count);
-            var bitsLeft = 8 - _offset;
-            var data = _buffer;
-            if (count < bitsLeft)
-            {
-                _offset += count;
-                _buffer = (byte)(_buffer >> count);
-                return (byte)(data & Utility.SectionMasks[count]);
-            }
-            _buffer = (byte)_stream.ReadByte();
-            _offset = (byte)(count - bitsLeft);
-            data |= (byte)(_buffer & Utility.SectionMasks[_offset] << bitsLeft);
-            return data;
+            if (_offset == 8) return ReadUnalignedByte();
+            return (byte) Read(count);
         }
 
         public void Dispose()
         {
-            //Stream.Dispose(); //Bug
+            // _stream.Close(); bug to close or not to close
         }
     }
 }
