@@ -1,4 +1,5 @@
-﻿using Ofc.Algorithm.Zetty;
+﻿using Ofc.Algorithm.Raw;
+using Ofc.Algorithm.Zetty;
 using Ofc.Core.Configurations;
 using Ofc.Parsing;
 using Ofc.Parsing.Hooks;
@@ -134,7 +135,8 @@ namespace Ofc
 
                     outStream.Position = 0;
                     var buf = outStream.ToArray();
-                    outTotal2.Write(buf, 0, buf.Length);
+                    outTotal.Write(buf, 0, buf.Length);
+                    outTotal.Flush();
                     //Helper.CompressLzma(outStream, outTotal);
                 }
 
@@ -148,7 +150,7 @@ namespace Ofc
 
                         var lexer = new OfcLexer(stream, true);
 
-                        var parser = new OfcParser(lexer, new AlgorithmHookString(new ZettyAlgorithm(new SimpleConfiguration()), outStream, new SimpleConfiguration()));
+                        var parser = new OfcParser(lexer, new AlgorithmHookString(new RawAlgorithm(), outStream, new SimpleConfiguration()));
                         parser.Parse();
                     }
                     catch (Exception ex)
@@ -162,6 +164,7 @@ namespace Ofc
                     outStream.Position = 0;
                     var buf = outStream.ToArray();
                     outTotal2.Write(buf, 0, buf.Length);
+                    outTotal2.Flush();
                     //   Helper.CompressLzma(outStream, outTotal);
                 }
             }
