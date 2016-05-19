@@ -6,7 +6,7 @@
     using Ofc.Algorithm.Rounding;
     using Ofc.Core;
 
-    public class ZettyAlgorithm : IAlgorithm<OfcNumber>
+    public class ZettyAlgorithm : IAlgorithm<string>
     {
         private readonly IConfiguaration _config;
         public string Id { get; }
@@ -23,12 +23,12 @@
             return true;
         }
 
-        public IReporter<OfcNumber> Compress(IFile target, IConfiguaration configuaration, Stream output, int width, int height)
+        public IReporter<string> Compress(IFile target, IConfiguaration configuaration, Stream output, int width, int height)
         {
-            return new RounderReporter(output, _config);
+            return new ZettyCompression(output);
         }
 
-        public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<OfcNumber> reporter, int width)
+        public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<string> reporter, int width)
         {
             throw new NotImplementedException();
         }

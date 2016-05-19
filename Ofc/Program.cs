@@ -1,4 +1,9 @@
-﻿namespace Ofc
+﻿using Ofc.Algorithm.Zetty;
+using Ofc.Core.Configurations;
+using Ofc.Parsing;
+using Ofc.Parsing.Hooks;
+
+namespace Ofc
 {
     using System;
     using System.IO;

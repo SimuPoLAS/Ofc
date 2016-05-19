@@ -19,8 +19,8 @@
 
             // Encode the file.
             coder.Code(inStream, outStream, inStream.Length, -1, null);
-            outStream.Flush();
-            outStream.Close();
+           // outStream.Flush();
+           // outStream.Close();
         }
 
         public static void DecompressFileLzma(Stream inStream, Stream outStream)
