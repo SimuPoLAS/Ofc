@@ -30,6 +30,11 @@ namespace Ofc
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
+#if DEBUG
+            if (Environment.MachineName == "JARJAR")
+                TestZetty();
+#endif
+
             try
             {
                 BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
@@ -102,6 +107,40 @@ namespace Ofc
             {
                 Console.WriteLine("fatal application error: \n" + ex);
             }
+        }
+
+        private static void TestZetty()
+        {
+            var outTotal = File.Open("roffel.bin", FileMode.Append);
+            foreach (var file in Directory.EnumerateFiles(@"C:\damBreak4phase_wp8", "*", SearchOption.AllDirectories))
+                //var file = @"C:\damBreak4phase_wp8\0.2\T";
+                using (var stream = new FileInputStream(file))
+                {
+
+                    Console.WriteLine(file);
+                    var outStream = new MemoryStream();
+                    try
+                    {
+
+                        var lexer = new OfcLexer(stream, true);
+
+                        var parser = new OfcParser(lexer, new AlgorithmHookString(new ZettyAlgorithm(new SimpleConfiguration()), outStream, new SimpleConfiguration()));
+                        parser.Parse();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Cant parse " + file + " bcus " + ex);
+                        stream.Dispose();
+                        Console.WriteLine("Reopening ...");
+                        outStream = new MemoryStream(File.ReadAllBytes(file));
+                    }
+
+                    outStream.Position = 0;
+                    // var buf = outStream.ToArray();
+                    //  outTotal.Write(buf, 0, buf.Length);
+                    Helper.CompressLzma(outStream, outTotal);
+                }
+
         }
 
         [Obsolete]
