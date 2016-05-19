@@ -39,5 +39,20 @@
         {
             manager.Enqueue(new CompressAction(string.Empty, source, destination + ".bin", destination + ".dat", destination + ".datu"));
         }
+
+        /// <summary>
+        /// Converts a bool array in a binary presentation, where true is a 1 and false is a 0
+        /// </summary>
+        /// <param name="bits"></param>
+        /// <returns>A tuple, where item1 is the encoded int, and byte is the bit count</returns>
+        internal static Tuple<int, byte> GetBinaryPresentation(bool[] bits)
+        {
+            var num = 0;
+            // ReSharper disable once ForCanBeConvertedToForeach
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            for (var i = 0; i < bits.Length; i++)
+                num = (num << 1) | (bits[i] ? 1 : 0);
+            return new Tuple<int, byte>(num, (byte)bits.Length);
+        }
     }
 }
