@@ -50,7 +50,7 @@
             Console.WriteLine();
 
             var diff = DateTime.UtcNow - before;
-            Console.WriteLine($"{total} actions completed in {diff.ToString("g")}");
+            Console.WriteLine($" {total} actions completed in {diff.ToString("g")}");
         }
 
         public void HandleItem(WorkItem work)

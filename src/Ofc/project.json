@@ -4,15 +4,12 @@
   "version": "1.0.0-*",
   "description": "A tool to compress and decompress Open Foam® files.",
   "authors": ["Widi"],
-  "tags": [""],
-  "projectUrl": "",
-  "licenseUrl": "",
-
+  
   "commands": {
     "run": "Ofc"
   },
 
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true,
     "allowUnsafe": true
   },
