@@ -10,8 +10,7 @@
   },
 
   "buildOptions": {
-    "emitEntryPoint": true,
-    "allowUnsafe": true
+    "emitEntryPoint": true
   },
 
   "dependencies": {

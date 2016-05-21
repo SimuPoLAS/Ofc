@@ -45,6 +45,7 @@
             while (_reader.BaseStream.Read(buffer, 0, 8) == 8 && (value = BitConverter.ToInt64(buffer, 0)) != -1)
                 _sections.Add(new CompressedSection((uint) value, 0, (byte) _reader.BaseStream.ReadByte()));
             if (value != -1) throw new FormatException("Bad header.");
+            if (_sections.Count != 0 && _stream == null) throw new InvalidOperationException("No data file specified.");
 
             // Read data
             while (_sections.Count > 0)

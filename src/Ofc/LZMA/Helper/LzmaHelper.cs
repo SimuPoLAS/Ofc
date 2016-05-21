@@ -5,12 +5,12 @@
     using Ofc.LZMA.Compatibility;
     using Ofc.LZMA.Compress.LZMA;
 
-    public class Helper
+    public static class LzmaHelper
     {
         public static void CompressLzma(Stream inStream, Stream outStream)
         {
             var coder = new Encoder();
-           
+
             // Write the encoder properties
             coder.WriteCoderProperties(outStream);
 
@@ -19,8 +19,8 @@
 
             // Encode the file.
             coder.Code(inStream, outStream, inStream.Length, -1, null);
-           // outStream.Flush();
-           // outStream.Close();
+            // outStream.Flush();
+            // outStream.Close();
         }
 
         public static void DecompressFileLzma(Stream inStream, Stream outStream)

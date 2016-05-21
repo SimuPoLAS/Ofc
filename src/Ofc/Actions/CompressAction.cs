@@ -11,7 +11,7 @@
 
     internal class CompressAction : IOfcAction
     {
-        public string Code => "COMP";
+        public string Code => "COM";
 
         public string Message { get; set; }
 
@@ -28,35 +28,45 @@
 
 
         private string _sourcePath;
-        private string _binaryPath;
-        private string _textualPath;
+        private string _dataPath;
+        private string _metaPath;
         private string _relativePath;
         private string _lzmaPath;
+        private bool _generatedDataFile;
 
         private bool _faulty;
         private OfcActionResult _result = OfcActionResult.Done;
 
 
-        public CompressAction(string basePath, string sourcePath, string binaryPath, string textualPath, string lzmaPath)
+        public CompressAction(string basePath, string sourcePath, string dataPath, string metaPath, string lzmaPath)
         {
             _sourcePath = sourcePath;
-            _binaryPath = binaryPath;
-            _textualPath = textualPath;
+            _dataPath = dataPath;
+            _metaPath = metaPath;
             _lzmaPath = lzmaPath;
-            _relativePath = _sourcePath.StartsWith(basePath) ? _sourcePath.Substring(basePath.Length) : _sourcePath;
+            _relativePath = basePath != null && _sourcePath.StartsWith(basePath) ? _sourcePath.Substring(basePath.Length) : _sourcePath;
         }
 
+
+        public void Preperation()
+        {
+            if (!File.Exists(_sourcePath)) Throw<FileNotFoundException>("Could not find the specified file.");
+            if (!Force)
+            {
+                if (File.Exists(_metaPath)) Throw<Exception>("The destination file does already exist.");
+                if (File.Exists(_dataPath)) Throw<Exception>("The destination file does already exist.");
+            }
+        }
 
         public void Conduction()
         {
             try
             {
                 Status = 0;
-                Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_binaryPath));
-                Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_textualPath));
-                Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_lzmaPath));
+                Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_dataPath));
+                Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_metaPath));
                 // open the binary output file
-                using (var binaryOutput = File.OpenWrite(_binaryPath + ".tmp"))
+                using (var binaryOutput = File.OpenWrite(_dataPath + ActionUtils.TempFileExtention))
                 {
                     Status = 1;
                     var algorithm = new BlockyAlgorithm();
@@ -77,6 +87,7 @@
                         try
                         {
                             parser.Parse();
+                            _generatedDataFile = hook.CompressedDataSections.Count != 0;
                         }
                         catch (Exception)
                         {
@@ -84,16 +95,18 @@
                         }
                     }
                     Status = 6;
-                    if (f)
+                    if (f || hook.CompressedDataSections.Count == 0)
                     {
+                        _generatedDataFile = false;
+                        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_lzmaPath));
                         Status = 100;
                         using (var source = File.OpenRead(_sourcePath))
                         {
                             Status = 101;
-                            using (var outp = File.OpenWrite(_lzmaPath + ".tmp"))
+                            using (var outp = File.OpenWrite(_lzmaPath))
                             {
                                 Status = 102;
-                                Helper.CompressLzma(source, outp);
+                                LzmaHelper.CompressLzma(source, outp);
                                 Status = 103;
                             }
                         }
@@ -105,7 +118,7 @@
                         using (var source = File.OpenText(_sourcePath))
                         {
                             Status = 201;
-                            using (var outp = File.CreateText(_textualPath + ".tmp"))
+                            using (var outp = File.CreateText(_metaPath + ActionUtils.TempFileExtention))
                             {
                                 Status = 202;
                                 using (var writer = new MarerWriter(source, outp, hook.CompressedDataSections))
@@ -117,23 +130,39 @@
                             }
                         }
                         Status = 205;
-                        using (var source = File.OpenRead(_textualPath + ".tmp"))
+                        using (var source = File.OpenRead(_metaPath + ActionUtils.TempFileExtention))
                         {
                             Status = 206;
-                            using (var outp = File.OpenWrite(_textualPath + ".x.tmp"))
+                            using (var outp = File.OpenWrite(_metaPath))
                             {
                                 Status = 207;
-                                Helper.CompressLzma(source, outp);
+                                LzmaHelper.CompressLzma(source, outp);
                                 Status = 208;
                             }
                         }
                         Status = 209;
-                        File.Delete(_textualPath + ".tmp");
+                        File.Delete(_metaPath + ActionUtils.TempFileExtention);
                         Status = 210;
-                        File.Move(_textualPath + ".x.tmp", _textualPath + ".tmp");
-                        Status = 211;
                     }
                 }
+
+                if (_generatedDataFile)
+                {
+                    Status = 212;
+                    using (var input = File.OpenRead(_dataPath + ActionUtils.TempFileExtention))
+                    {
+                        Status = 213;
+                        using (var output = File.OpenWrite(_dataPath))
+                        {
+                            Status = 214;
+                            LzmaHelper.CompressLzma(input, output);
+                            Status = 215;
+                        }
+                        Status = 216;
+                    }
+                    Status = 217;
+                }
+                File.Delete(_dataPath + ActionUtils.TempFileExtention);
             }
             catch (UnauthorizedAccessException)
             {
@@ -152,39 +181,17 @@
             if (Status == 104)
             {
                 _result = OfcActionResult.Lzma;
-
-                if (File.Exists(_binaryPath + ".tmp")) File.Delete(_binaryPath + ".tmp");
-                if (File.Exists(_lzmaPath)) File.Delete(_lzmaPath);
-                File.Move(_lzmaPath + ".tmp", _lzmaPath);
-
                 return;
             }
             if (Status == 211)
             {
                 _result = OfcActionResult.Done;
-
-                if (File.Exists(_binaryPath)) File.Delete(_binaryPath);
-                File.Move(_binaryPath + ".tmp", _binaryPath);
-
-                if (File.Exists(_textualPath)) File.Delete(_textualPath);
-                File.Move(_textualPath + ".tmp", _textualPath);
-
                 return;
             }
 
-            if (Status > 1 && File.Exists(_binaryPath + ".tmp")) File.Delete(_binaryPath + ".tmp");
-            if (Status >= 100 && Status < 200 && File.Exists(_lzmaPath + ".tmp")) File.Delete(_lzmaPath + ".tmp");
-            if (Status >= 200 && Status < 300 && File.Exists(_textualPath + ".tmp")) File.Delete(_textualPath + ".tmp");
-        }
-
-        public void Preperation()
-        {
-            if (!File.Exists(_sourcePath)) Throw<FileNotFoundException>("Could not find the specified file.");
-            if (!Force)
-            {
-                if (File.Exists(_binaryPath)) Throw<Exception>("Not allowed to override existing file.");
-                if (File.Exists(_textualPath)) Throw<Exception>("Not allowed to override existing file.");
-            }
+            if (Status > 1 && File.Exists(_dataPath + ActionUtils.TempFileExtention)) File.Delete(_dataPath + ActionUtils.TempFileExtention);
+            if (Status >= 100 && Status < 200 && File.Exists(_lzmaPath + ActionUtils.TempFileExtention)) File.Delete(_lzmaPath + ActionUtils.TempFileExtention);
+            if (Status >= 200 && Status < 300 && File.Exists(_metaPath + ActionUtils.TempFileExtention)) File.Delete(_metaPath + ActionUtils.TempFileExtention);
         }
 
 
