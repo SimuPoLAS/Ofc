@@ -1,8 +1,9 @@
-﻿namespace Ofc.Util
+﻿namespace Ofc.Actions
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using Ofc.Util;
 
     internal class OfcActionManager : IActionManager<IOfcAction>
     {

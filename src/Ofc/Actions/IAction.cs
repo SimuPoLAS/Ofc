@@ -1,4 +1,4 @@
-﻿namespace Ofc.Util
+﻿namespace Ofc.Actions
 {
     internal interface IAction
     {
