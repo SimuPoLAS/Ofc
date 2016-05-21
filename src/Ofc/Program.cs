@@ -78,6 +78,7 @@ namespace Ofc
                             break;
                         case CommandLineLayers.CompressDirectory:
                             manager.AddDirectory(result[0], result[1], result['r']);
+                            if (manager.Empty) Console.WriteLine("WARNING: Input folder is empty.");
                             manager.Override = result['f'];
                             manager.Parallel = result['p'];
                             manager.Handle();

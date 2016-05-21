@@ -1,6 +1,8 @@
 {
+  "title": "OFC",
+  "language": "en",
   "version": "1.0.0-*",
-  "description": "Ofc command line tools",
+  "description": "A tool to compress and decompress Open Foam® files.",
   "authors": ["Widi"],
   "tags": [""],
   "projectUrl": "",
