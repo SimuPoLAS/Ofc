@@ -1,6 +1,10 @@
-﻿using Ofc.Algorithm.Raw;
+﻿using Ofc.Algorithm.Blocky;
+using Ofc.Algorithm.Blocky.Blockfinding;
+using Ofc.Algorithm.Integration.Dummy;
+using Ofc.Algorithm.Raw;
 using Ofc.Algorithm.Zetty;
 using Ofc.Core.Configurations;
+using Ofc.LZMA.Compatibility;
 using Ofc.Parsing;
 using Ofc.Parsing.Hooks;
 
@@ -31,6 +35,7 @@ namespace Ofc
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
+
             try
             {
                 BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
@@ -105,17 +110,42 @@ namespace Ofc
             }
         }
 
-        private static void TestZetty()
+        //private static void TestBlockyDecompression()
+        //{
+        //    Blockfinding.SetDebugEnabled(true);
+        //    var mem = new MemoryStream();
+
+        //    using (var stream = new FileInputStream(@"C:\Users\Nino\OneDrive\Datenkompression\Code\C# MONO SRC 130315 2305\Ofcf\bin\Release\damBreak3D\0\alpha1"))
+        //    {
+
+        //        //     Console.WriteLine(file);
+                
+
+        //        var lexer = new OfcLexer(stream, true);
+
+        //        var parser = new OfcParser(lexer, new AlgorithmHookOfcNumber(new BlockyAlgorithm(), mem, new SimpleConfiguration()));
+        //        parser.Parse();
+        //    }
+
+        //    mem.Position = 0;
+        //    var x = new BlockyDecompression(mem, new DummyReporter("kappa.decomp.txt"));
+        //    x.Decompress();
+        //}
+
+        private static void TestZettyCompression()
         {
-            var outTotal = File.Open("roffel.bin", FileMode.Append);
-            var outTotal2 = File.Open("roffel2.bin", FileMode.Append);
+            if (File.Exists("out.bin"))
+                File.Delete("out.bin");
+
+            var outTotal = File.Open("out.bin", FileMode.Append);
+           // var outTotal2 = File.Open("out2.bin", FileMode.Append);
             foreach (var file in Directory.EnumerateFiles(@"C:\damBreak4phase_wp8", "*", SearchOption.AllDirectories))
-            //var file = @"C:\damBreak4phase_wp8\0.2\T";
+            //var file = @"C:\damBreak4phase_wp8\0.5\alpha.air";
             {
                 using (var stream = new FileInputStream(file))
                 {
 
-                    Console.WriteLine(file);
+                    //     Console.WriteLine(file);
                     var outStream = new MemoryStream();
                     try
                     {
@@ -130,7 +160,7 @@ namespace Ofc
                         Console.WriteLine("Cant parse " + file + " bcus " + ex);
                         stream.Dispose();
                         Console.WriteLine("Reopening ...");
-                        outStream = new MemoryStream(File.ReadAllBytes(file));
+                        outStream = new MemoryStream();
                     }
 
                     outStream.Position = 0;
@@ -140,35 +170,38 @@ namespace Ofc
                     //Helper.CompressLzma(outStream, outTotal);
                 }
 
-                using (var stream = new FileInputStream(file))
-                {
+            //    using (var stream = new FileInputStream(file))
+            //    {
 
-                    Console.WriteLine(file);
-                    var outStream = new MemoryStream();
-                    try
-                    {
+            //        //     Console.WriteLine(file);
+            //        var outStream = new MemoryStream();
+            //        try
+            //        {
 
-                        var lexer = new OfcLexer(stream, true);
+            //            var lexer = new OfcLexer(stream, true);
 
-                        var parser = new OfcParser(lexer, new AlgorithmHookString(new RawAlgorithm(), outStream, new SimpleConfiguration()));
-                        parser.Parse();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Cant parse " + file + " bcus " + ex);
-                        stream.Dispose();
-                        Console.WriteLine("Reopening ...");
-                        outStream = new MemoryStream(File.ReadAllBytes(file));
-                    }
+            //            var parser = new OfcParser(lexer, new AlgorithmHookString(new RawAlgorithm(), outStream, new SimpleConfiguration()));
+            //            parser.Parse();
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Console.WriteLine("Cant parse " + file + " bcus " + ex);
+            //            stream.Dispose();
+            //            Console.WriteLine("Reopening ...");
+            //            outStream = new MemoryStream();
+            //        }
 
-                    outStream.Position = 0;
-                    var buf = outStream.ToArray();
-                    outTotal2.Write(buf, 0, buf.Length);
-                    outTotal2.Flush();
-                    //   Helper.CompressLzma(outStream, outTotal);
-                }
+            //        outStream.Position = 0;
+            //        var buf = outStream.ToArray();
+            //        outTotal2.Write(buf, 0, buf.Length);
+            //        outTotal2.Flush();
+            //        //   Helper.CompressLzma(outStream, outTotal);
+            //    }
+
+
             }
-
+            outTotal.Close();
+            //outTotal2.Close();
         }
 
         [Obsolete]

@@ -45,7 +45,7 @@
         /// </summary>
         /// <param name="bits"></param>
         /// <returns>A tuple, where item1 is the encoded int, and byte is the bit count</returns>
-        internal static Tuple<int, byte> GetBinaryPresentation(bool[] bits)
+        internal static Tuple<int, byte> GetBinaryPresentation(this bool[] bits)
         {
             var num = 0;
             // ReSharper disable once ForCanBeConvertedToForeach

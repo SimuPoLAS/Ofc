@@ -16,7 +16,7 @@ namespace ConsoleApp1
 
         //public HuffmanCoding(ICollection<KeyValuePair<int, T>> occurenceValueCollection)
         //{
-        //    _occurenceValue = occurenceValueCollection.ToDictionary(item => item.Key, item => item.Value);
+        //    _occurenceValue = occurenceValueCollection.Select(item => item., item => item);
         //}
 
         //public HuffmanCoding(IEnumerable<KeyValuePair<int, T>> occurenceValueEnumarable)

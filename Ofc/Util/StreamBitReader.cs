@@ -12,14 +12,14 @@
         public StreamBitReader(Stream stream)
         {
             _stream = stream;
-            _buffer = (byte) _stream.ReadByte();
+            _buffer = (byte)_stream.ReadByte();
         }
 
         private byte ReadUnalignedByte()
         {
             var value = _stream.ReadByte();
             if (value == -1) throw new EndOfStreamException();
-            return (byte) value;
+            return (byte)value;
         }
 
         public ulong Read(byte count)
@@ -38,11 +38,11 @@
                 {
                     data |= (_buffer & Utility.SectionMasks[count]) << offset;
                     _offset += count;
-                    _buffer = (byte) (_buffer >> count);
+                    _buffer = (byte)(_buffer >> count);
                     return data;
                 }
-                data |= (ulong) _buffer << offset;
-                count -= (byte) bitsLeft;
+                data |= (ulong)_buffer << offset;
+                count -= (byte)bitsLeft;
                 offset += bitsLeft;
                 _offset = 0;
                 _buffer = ReadUnalignedByte();
@@ -52,8 +52,8 @@
 
         public byte ReadByte(byte count)
         {
-            if (_offset == 8) return ReadUnalignedByte();
-            return (byte) Read(count);
+            if (_offset == 8 && count == 8) return ReadUnalignedByte();
+            return (byte)Read(count);
         }
 
         public void Dispose()
