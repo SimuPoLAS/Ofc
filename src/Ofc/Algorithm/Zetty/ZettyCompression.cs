@@ -102,7 +102,6 @@ namespace Ofc.Algorithm.Zetty
                 }
             }
 
-            var changedCount = 0;
             var changed = true;
             for (var offset = 0; changed; offset++)
             {
@@ -116,7 +115,6 @@ namespace Ofc.Algorithm.Zetty
                         changed = true;
                     }
                 }
-                if (changed) changedCount++;
             }
 
 
@@ -151,11 +149,6 @@ namespace Ofc.Algorithm.Zetty
             _bitWriter.WriteByte((byte)minNumberLength, 8);
             _bitWriter.WriteByte((byte)minExpLength, 8);
 
-            var relevantDataCount = _valueIndex;
-            var relevantDataDecrement = 0;
-
-
-            var pos = _bitWriter.Stream.Position;
             var avg = (int)numberLengths.Average();
 
             for (var i = 0; i < _valueIndex; i++)
