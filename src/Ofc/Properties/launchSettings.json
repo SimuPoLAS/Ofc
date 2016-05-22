@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "run": {
+      "commandName": "run",
+      "workingDirectory": "bin"
+    },
+    "Ofc": {
+      "commandName": "Project"
+    }
+  }
+}

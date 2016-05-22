@@ -5,12 +5,12 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E6527CE5-9479-492D-BAE9-975B48631559}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Ofc", "Ofc\Ofc.xproj", "{484AB206-0CE7-4B54-BBFF-87FB16E9E105}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A88A74A-AE07-477D-926A-995B8F987F9E}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Ofc", "src\Ofc\Ofc.xproj", "{484AB206-0CE7-4B54-BBFF-87FB16E9E105}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
