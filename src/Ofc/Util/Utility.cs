@@ -1,4 +1,6 @@
-﻿namespace Ofc.Util
+﻿using JetBrains.Annotations;
+
+namespace Ofc.Util
 {
     using System;
 
@@ -19,8 +21,9 @@
 
         public static ulong GetMaxValue(byte bits) => SectionMasks[bits];
 
+        public static byte GetNeededBits(this long x) => (byte) (Math.Floor(Math.Log(Math.Abs(x), 2)) + 1);
 
-        public static byte GetNeededBits(this long x)
+        public static byte GetNeededBits2(this long x)
         {
             //var y = x & (x - 1);
 
