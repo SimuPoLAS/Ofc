@@ -1,34 +1,37 @@
-﻿namespace Ofc.Algorithm.RoundingDigits
+﻿using Ofc.Algorithm.Integration;
+
+namespace Ofc.Algorithm.RoundingDigits
 {
     using System;
     using System.IO;
     using Ofc.Core;
 
-    public class RoundingDigitsAlgorithm : IAlgorithm<double>
+    public class RoundingDigitsAlgorithm : IAlgorithm<string>
     {
+        private readonly IAlgorithm<OfcNumber> _next;
         public string Id => "RND2";
         public string Name => "Rounding Digits";
         public Version Version => new Version(1, 0, 0, 0);
 
+        public RoundingDigitsAlgorithm(IAlgorithm<OfcNumber> next)
+        {
+            _next = next;
+        }
 
         public bool SupportsDimension(int width, int height)
         {
-            return true;
+            return _next.SupportsDimension(width, height);
         }
 
-        public IReporter<double> Compress(IFile target, IConfiguaration configuaration, Stream output, int width, int height)
+        public IReporter<string> Compress(IFile target, IConfiguaration configuaration, Stream output, int width, int height)
         {
-            return new RoundingDigitsReporter(output, configuaration.Get<int>("roundingdecimals"));
+            var nextReporter = _next.Compress(target, configuaration, output, width, height);
+            return new RoundingDigitsReporter(configuaration.Get<int>("roundingdecimals"), nextReporter);
         }
 
-        public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<double> reporter, int width)
+        public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<string> reporter, int width)
         {
-            var reader = new StreamReader(input);
-            var count = int.Parse(reader.ReadLine());
-            for (var i = 0; i < count; i++)
-            {
-                reporter.Report(double.Parse(reader.ReadLine()));
-            }
+            _next.Decompress(target, configuaration, input, new OfcConvertingReporter(reporter), width);
         }
     }
 }

@@ -1,52 +1,115 @@
-﻿namespace Ofc.Algorithm.RoundingDigits
+﻿using System;
+using System.Text;
+using Ofc.Algorithm.Integration;
+
+namespace Ofc.Algorithm.RoundingDigits
 {
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
     using Ofc.Core;
 
-    public class RoundingDigitsReporter : IReporter<double>
+    public class RoundingDigitsReporter : IReporter<string>
     {
         private readonly int _decimalDigits;
+        private readonly IReporter<OfcNumber> _nextReporter;
         public IConfiguaration Configuaration { get; }
-        private readonly StreamWriter _outStream;
-        private List<double> _values = new List<double>();
 
-        public RoundingDigitsReporter(Stream outStream, int decimalDigits)
+        public RoundingDigitsReporter(int decimalDigits, IReporter<OfcNumber> nextReporter)
         {
             _decimalDigits = decimalDigits;
-            _outStream = new StreamWriter(outStream);
+            _nextReporter = nextReporter;
         }
 
         public void Dispose()
         {
+            _nextReporter.Dispose();
         }
 
         public void Finish()
         {
-            _outStream.WriteLine(_values.Count);
-            for (var i = 0; i < _values.Count; i++)
+            _nextReporter.Finish();
+        }
+
+        private static string RoundNumber(string number, int didgits)
+        {
+            if (didgits == 0) return number;
+
+            var sb = new StringBuilder(32);
+            var cursor = 0;
+            var negative = false;
+            var exponent = 0;
+            var setDot = false;
+
+            // extract information
+            for (var i = 0; i < number.Length; i++)
             {
-                _outStream.WriteLine(string.Format(CultureInfo.InvariantCulture.NumberFormat, "{0:F}", _values[i]));
+                var c = number[i];
+                if (i == 0 && c == '-') negative = true;
+                else if (i == 0 && c == '+') negative = false;
+                if (c >= '0' && c <= '9') sb.Append(c);
+                else if (c == '.')
+                {
+                    cursor = sb.Length;
+                    setDot = true;
+                }
+                else if (c == 'e' || c == 'E')
+                {
+                    exponent = int.Parse(number.Substring(i + 1));
+                    break;
+                }
             }
-            _outStream.Flush();
+            if (!setDot) cursor = sb.Length;
+
+            // do transformation
+            var rcursor = cursor + exponent;
+            var split = rcursor + didgits;
+            if (split < 0) return "0";
+            var up = split >= 0 && split <= sb.Length - 1 && sb[split] - '5' >= 0;
+            if (split < sb.Length) sb.Length = split;
+            if (up)
+            {
+                var l = sb.Length - 1;
+                for (; l >= 0; l--)
+                {
+                    var c = sb[l];
+                    if (c == '9')
+                    {
+                        sb[l] = '0';
+                        continue;
+                    }
+                    sb[l] = ++c;
+                    break;
+                }
+                if (l < 0)
+                {
+                    sb.Insert(0, '1');
+                    cursor++;
+                }
+
+            }
+            while (sb.Length < cursor) sb.Append('0');
+            if (sb.Length > cursor) sb.Insert(cursor, '.');
+            if (exponent != 0) sb.Append("e" + exponent);
+            if (negative) sb.Insert(0, '-');
+            return sb.ToString();
         }
 
         public void Flush()
         {
-            _outStream.Flush();
+            _nextReporter.Flush();
         }
 
-        public void Report(double value)
+        public void Report(string value)
         {
-            _values.Add(value);
+            _nextReporter.Report(OfcNumber.Parse(RoundNumber(value, _decimalDigits)));
         }
 
-        public void Report(double[] values, int offset, int amount)
+        public void Report(string[] values, int offset, int amount)
         {
             for (var i = offset; i < offset + amount; i++)
             {
-                Report(values[offset + i]);
+                Report(values[i]);
             }
         }
     }
