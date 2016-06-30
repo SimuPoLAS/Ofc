@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using Ofc.Core;
 
     internal static class ActionUtils
     {
@@ -30,7 +31,7 @@
         }
 
 
-        internal static void AddCompressDirectoryAction(this OfcActionManager manager, string baseInputDirectory, string baseOutputDirectory, bool recursive)
+        internal static void AddCompressDirectoryAction(this OfcActionManager manager, string baseInputDirectory, string baseOutputDirectory, bool recursive, IConfiguaration config)
         {
             baseInputDirectory = Path.GetFullPath(baseInputDirectory);
             baseOutputDirectory = Path.GetFullPath(baseOutputDirectory);
@@ -39,13 +40,13 @@
                 var relativePath = file.StartsWith(baseInputDirectory) ? file.Substring(baseInputDirectory.Length) : file;
                 if (relativePath.StartsWith("/") || relativePath.StartsWith("\\")) relativePath = relativePath.Substring(1);
                 var outputPath = Path.Combine(baseOutputDirectory, relativePath);
-                manager.Enqueue(new CompressAction(baseInputDirectory, file, outputPath + DataFileExtention, outputPath + MetaFileExtention, outputPath + UncompressedFileExtention));
+                manager.Enqueue(new CompressAction(baseInputDirectory, file, outputPath + DataFileExtention, outputPath + MetaFileExtention, outputPath + UncompressedFileExtention, config));
             }
         }
 
-        internal static void AddCompressFileAction(this OfcActionManager manager, string source, string destination)
+        internal static void AddCompressFileAction(this OfcActionManager manager, string source, string destination, IConfiguaration config)
         {
-            manager.Enqueue(new CompressAction(null, source, destination + DataFileExtention, destination + MetaFileExtention, destination + UncompressedFileExtention));
+            manager.Enqueue(new CompressAction(null, source, destination + DataFileExtention, destination + MetaFileExtention, destination + UncompressedFileExtention, config));
         }
 
         internal static void AddDecompressDirectoryAction(this OfcActionManager manager, string baseInputDirectory, string baseOutputDirectory, bool recursive)

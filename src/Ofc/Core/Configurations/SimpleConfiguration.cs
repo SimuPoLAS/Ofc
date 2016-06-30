@@ -34,17 +34,17 @@
         public object Get(string name)
         {
             object obj;
-            return _configuration.TryGetValue(name, out obj) ? obj : null;
+            return _configuration.TryGetValue(name.ToLower(), out obj) ? obj : null;
         }
 
-        public bool Has(string name) => _configuration.ContainsKey(name);
+        public bool Has(string name) => _configuration.ContainsKey(name.ToLower());
 
-        public bool Remove(string name) => _configuration.Remove(name);
+        public bool Remove(string name) => _configuration.Remove(name.ToLower());
 
         public void Set(string name, [CanBeNull] object value)
         {
             if (Readonly) throw new NotSupportedException("Configuration is readonly.");
-            _configuration[name] = value;
+            _configuration[name.ToLower()] = value;
             if (ReachedLimit) throw new InvalidOperationException("Configuration is full.");
         }
 

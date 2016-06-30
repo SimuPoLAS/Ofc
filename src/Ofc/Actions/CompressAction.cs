@@ -4,6 +4,8 @@
     using System.IO;
     using Ofc.Algorithm.Blocky.Integration;
     using Ofc.Algorithm.Integration;
+    using Ofc.Algorithm.Rounding;
+    using Ofc.Core;
     using Ofc.IO;
     using Ofc.LZMA.Helper;
     using Ofc.Parsing;
@@ -33,18 +35,20 @@
         private string _relativePath;
         private string _lzmaPath;
         private bool _generatedDataFile;
+        private IConfiguaration _configuaration;
 
         private bool _faulty;
         private OfcActionResult _result = OfcActionResult.Done;
 
 
-        public CompressAction(string basePath, string sourcePath, string dataPath, string metaPath, string lzmaPath)
+        public CompressAction(string basePath, string sourcePath, string dataPath, string metaPath, string lzmaPath, IConfiguaration config)
         {
             _sourcePath = sourcePath;
             _dataPath = dataPath;
             _metaPath = metaPath;
             _lzmaPath = lzmaPath;
             _relativePath = basePath != null && _sourcePath.StartsWith(basePath) ? _sourcePath.Substring(basePath.Length) : _sourcePath;
+            _configuaration = config;
         }
 
 
@@ -69,11 +73,11 @@
                 using (var binaryOutput = File.OpenWrite(_dataPath + ActionUtils.TempFileExtention))
                 {
                     Status = 1;
-                    var algorithm = new BlockyAlgorithm();
+                    var algorithm = _configuaration.True("rounding") ? (IAlgorithm<OfcNumber>) new RounderAlgorithm(new BlockyAlgorithm()) : new BlockyAlgorithm();
                     var converter = new CompressionDataConverter();
 
                     Status = 2;
-                    var hook = new MarerHook<OfcNumber>(algorithm, converter, binaryOutput);
+                    var hook = new MarerHook<OfcNumber>(algorithm, converter, binaryOutput, _configuaration);
 
                     Status = 3;
                     var f = false;

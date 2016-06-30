@@ -51,6 +51,13 @@
         IArgumentBuilder Show();
 
         /// <summary>
+        ///     Sets the type of the argument for validation and values storage.
+        /// </summary>
+        /// <typeparam name="T">Type of the argument.</typeparam>
+        /// <returns>Itself for method chaining.</returns>
+        IArgumentBuilder Type<T>();
+
+        /// <summary>
         ///     Sets the visibility of the argument.
         /// </summary>
         /// <param name="visiblility">Target visibility.</param>

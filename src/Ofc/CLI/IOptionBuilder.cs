@@ -67,6 +67,13 @@
         IOptionBuilder Show();
 
         /// <summary>
+        ///     Sets the type of the option for validation and values storage.
+        /// </summary>
+        /// <typeparam name="T">Type of the option.</typeparam>
+        /// <returns>Itself for method chaining.</returns>
+        IOptionBuilder Type<T>();
+
+        /// <summary>
         ///     Sets the visibility of the option.
         /// </summary>
         /// <param name="visiblility">Target visibility.</param>

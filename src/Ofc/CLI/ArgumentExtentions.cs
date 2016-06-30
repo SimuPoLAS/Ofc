@@ -1,5 +1,6 @@
 ﻿namespace Ofc.CLI
 {
+    using System;
     using JetBrains.Annotations;
 
     internal static class ArgumentExtentions
@@ -30,5 +31,14 @@
 
         [UsedImplicitly]
         internal static IArgumentLayer Option(this IArgumentLayer target, char shortName, string longName) => target.AddOption(e => e.SetShortName(shortName).SetLongName(longName));
+
+        [UsedImplicitly]
+        internal static IArgumentLayer Option(this IArgumentLayer target, char shortName, Action<IArgumentBuilder> builder) => target.AddOption(e => e.SetShortName(shortName).Argument(builder));
+
+        [UsedImplicitly]
+        internal static IArgumentLayer Option(this IArgumentLayer target, string longName, Action<IArgumentBuilder> builder) => target.AddOption(e => e.SetLongName(longName).Argument(builder));
+
+        [UsedImplicitly]
+        internal static IArgumentLayer Option(this IArgumentLayer target, char shortName, string longName, Action<IArgumentBuilder> builder) => target.AddOption(e => e.SetShortName(shortName).SetLongName(longName).Argument(builder));
     }
 }

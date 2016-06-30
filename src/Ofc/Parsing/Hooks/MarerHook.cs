@@ -12,6 +12,7 @@
         private IConverter<T> _converter;
         private IReporter<T> _reporter;
         private Stream _output;
+        private IConfiguaration _configuaration;
 
         private bool _inList;
         private uint _start;
@@ -22,11 +23,12 @@
         internal IPositionProvider PositionProvider { get; set; }
 
 
-        public MarerHook(IAlgorithm<T> algorithm, IConverter<T> converter, Stream output)
+        public MarerHook(IAlgorithm<T> algorithm, IConverter<T> converter, Stream output, IConfiguaration configuaration)
         {
             _algorithm = algorithm;
             _converter = converter;
             _output = output;
+            _configuaration = configuaration;
         }
 
 
@@ -65,7 +67,7 @@
             if (type == OfcListType.Anonymous) return;
             if (_inList) throw new NotSupportedException();
             _inList = true;
-            _reporter = _algorithm.Compress(null, EmptyConfiguration.Instance, _output, (int) type, capacity);
+            _reporter = _algorithm.Compress(null, _configuaration ?? EmptyConfiguration.Instance, _output, (int) type, capacity);
             _size = (byte) type;
             if (_reporter == null) throw new NotSupportedException();
             _start = PositionProvider.Position;

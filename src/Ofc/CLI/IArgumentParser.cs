@@ -54,5 +54,7 @@
         /// <param name="arguments">Arguments which should be parsed.</param>
         /// <returns>A result containing all parsed elements as well as information about the parsing result (e.g. success).</returns>
         IArgumentResult<T> Parse(IEnumerable<string> arguments);
+
+        void Validator<TV>(IValidator validator);
     }
 }

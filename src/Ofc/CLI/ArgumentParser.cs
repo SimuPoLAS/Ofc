@@ -9,6 +9,7 @@ namespace Ofc.CLI
     using System.Text;
     using System.Text.RegularExpressions;
     using JetBrains.Annotations;
+    using Ofc.CLI.Validators;
 
     /// <summary>
     ///     Provides methods for parsing command line arguments.
@@ -22,6 +23,19 @@ namespace Ofc.CLI
         private StringBuilder _builder = new StringBuilder();
         private List<Option> _generalOptions = new List<Option>();
         private Dictionary<T, Layer> _layers = new Dictionary<T, Layer>();
+        private IValidatorContainer _container = new ValidatorContainer();
+
+
+        public ArgumentParser()
+        {
+            _container.SetValidator<byte>(new FuncValidator((string v, ref object d) =>
+            {
+                byte value;
+                if (!byte.TryParse(v, out value)) return false;
+                d = value;
+                return true;
+            }));
+        }
 
 
         /// <summary>
@@ -146,7 +160,7 @@ namespace Ofc.CLI
             if (_layers.ContainsKey(id)) throw new ArgumentException("A layer with this key is already registered.");
 
             // Create a new Layer, add and return it
-            var layer = new Layer();
+            var layer = new Layer(_container);
             _layers.Add(id, layer);
             return layer;
         }
@@ -157,7 +171,7 @@ namespace Ofc.CLI
         /// <returns>The generated option.</returns>
         public IOptionBuilder NewOption()
         {
-            var opt = new Option();
+            var opt = new Option(_container);
             _generalOptions.Add(opt);
             return opt;
         }
@@ -231,10 +245,10 @@ namespace Ofc.CLI
             if (targets.Count == 0) return new ArgumentResult<T>();
 
             // Values
-            var data = new List<string>();
+            var data = new List<object>();
             var names = new List<string>();
             var flags = new Dictionary<string, bool>();
-            var options = new Dictionary<string, string>();
+            var options = new Dictionary<string, object>();
 
             // To store the result
             var found = false;
@@ -275,7 +289,13 @@ namespace Ofc.CLI
                         }
                         else
                         {
-                            options[name] = value;
+                            if (op.ObjectArgument.Validator != null)
+                            {
+                                object ex = null;
+                                if (!op.ObjectArgument.Validator.Validate(value, ref ex)) break;
+                                options[name] = ex;
+                            }
+                            else options[name] = value;
                             if (op.OptionShortName != '\0') flags["" + op.OptionShortName] = true;
                             flags[name] = true;
                         }
@@ -335,6 +355,11 @@ namespace Ofc.CLI
 
             // Retun a result
             return found ? new ArgumentResult<T>(key, data, names, flags, options) : new ArgumentResult<T>();
+        }
+
+        public void Validator<TV>(IValidator validator)
+        {
+            _container.SetValidator<TV>(validator);
         }
 
         private static readonly Regex simpleOption = new Regex(@"^-[a-z]$", RegexOptions.IgnoreCase);
@@ -402,6 +427,14 @@ namespace Ofc.CLI
         /// </summary>
         private class Argument : IArgumentBuilder, IGroupable
         {
+            private IValidatorContainer _container;
+
+            public Argument(IValidatorContainer container)
+            {
+                _container = container;
+            }
+
+
             /// <summary>
             ///     Description of the argument.
             /// </summary>
@@ -422,6 +455,12 @@ namespace Ofc.CLI
             ///     Visibility of the argument.
             /// </summary>
             internal ArgumentVisiblility ArgumentVisibility { get; private set; } = ArgumentVisiblility.All;
+
+            /// <summary>
+            /// Validator used for the argument.
+            /// </summary>
+            [CanBeNull]
+            internal IValidator Validator { get; set; }
 
 
             /// <summary>
@@ -495,6 +534,17 @@ namespace Ofc.CLI
             public IArgumentBuilder Show()
             {
                 ArgumentVisibility = ArgumentVisiblility.All;
+                return this;
+            }
+
+            /// <summary>
+            ///     Sets the type of the argument for validation and values storage.
+            /// </summary>
+            /// <typeparam name="TV">Type of the argument.</typeparam>
+            /// <returns>Itself for method chaining.</returns>
+            IArgumentBuilder IArgumentBuilder.Type<TV>()
+            {
+                Validator = _container.GetValidator<TV>();
                 return this;
             }
 
@@ -622,7 +672,12 @@ namespace Ofc.CLI
             private bool _optional;
             private Dictionary<string, Option> _longOptions = new Dictionary<string, Option>();
             private Dictionary<char, Option> _shortOptions = new Dictionary<char, Option>();
+            private IValidatorContainer _container;
 
+            public Layer(IValidatorContainer container)
+            {
+                _container = container;
+            }
 
             /// <summary>
             ///     Registered arguments.
@@ -656,7 +711,7 @@ namespace Ofc.CLI
                 if (builder == null) throw new ArgumentNullException(nameof(builder));
 
                 // Create a option supply and supply it to the 
-                var argument = new Argument();
+                var argument = new Argument(_container);
                 builder(argument);
 
                 // Check if the argument is valid and if not add it to the options
@@ -709,7 +764,7 @@ namespace Ofc.CLI
                 if (builder == null) throw new ArgumentNullException(nameof(builder));
 
                 // Create a option supply and supply it to the 
-                var option = new Option();
+                var option = new Option(_container);
                 builder(option);
 
                 // Check if the option is valid and if not add it to the options
@@ -790,6 +845,14 @@ namespace Ofc.CLI
         /// </summary>
         private class Option : IOptionBuilder
         {
+            private IValidatorContainer _container;
+
+            public Option(IValidatorContainer container)
+            {
+                _container = container;
+            }
+
+
             /// <summary>
             ///     Argument/Value of the option or <c>null</c> if there is none.
             /// </summary>
@@ -823,6 +886,12 @@ namespace Ofc.CLI
             /// </summary>
             internal ArgumentVisiblility OptionVisibility { get; private set; } = ArgumentVisiblility.All;
 
+            /// <summary>
+            /// Validator used for the option.
+            /// </summary>
+            [CanBeNull]
+            internal IValidator Validator { get; set; }
+
 
             /// <summary>
             ///     Adds an argument to the option.
@@ -837,7 +906,7 @@ namespace Ofc.CLI
                 if (builder == null) throw new ArgumentNullException(nameof(builder));
 
                 // Create a argument and build it
-                var argument = new Argument();
+                var argument = new Argument(_container);
                 builder(argument);
 
                 // Check if the argument is valid and set it
@@ -930,6 +999,17 @@ namespace Ofc.CLI
             public IOptionBuilder Show()
             {
                 OptionVisibility = ArgumentVisiblility.All;
+                return this;
+            }
+
+            /// <summary>
+            ///     Sets the type of the option for validation and values storage.
+            /// </summary>
+            /// <typeparam name="TV">Type of the option.</typeparam>
+            /// <returns>Itself for method chaining.</returns>
+            public IOptionBuilder Type<TV>()
+            {
+                Validator = _container.GetValidator<TV>();
                 return this;
             }
 

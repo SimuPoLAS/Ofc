@@ -11,11 +11,15 @@
 namespace Ofc
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using JetBrains.Annotations;
     using Ofc.Actions;
     using Ofc.Algorithm.Blocky.Integration;
     using Ofc.CLI;
+    using Ofc.CLI.Validators;
+    using Ofc.Core;
+    using Ofc.Core.Configurations;
 
     /// <summary>
     ///     Contains the main entrypoint for the application and the all the CLI functionality.
@@ -39,11 +43,14 @@ namespace Ofc
                 argumentParser.Description = "A command line tool for compressing Open Foam files.";
                 argumentParser.Name = "ofc.exe";
 
+                // register validators
+                argumentParser.Validator<RoundingData>(new RoudingValidator());
+
                 // add parser definitions
                 argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Displays this help message."));
                 argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Displays the current version of the tool."));
 
-                argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output").Option('f').Option('r').Option('p');
+                argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<RoundingData>()).Option('f').Option('r').Option('p');
                 argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output");
 
                 argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output").Option('f').Option('r').Option('p');
@@ -52,7 +59,7 @@ namespace Ofc
                 argumentParser.NewOption().SetShortName('f').Description("Enables force mode.");
                 argumentParser.NewOption().SetShortName('r').Description("Enables recursive compression/decompression.");
                 argumentParser.NewOption().SetShortName('p').Description("Enables parallel compression/decompression.");
-
+                
                 // parse the arguments
                 var result = argumentParser.Parse(args);
 
@@ -62,6 +69,18 @@ namespace Ofc
                 {
                     ok = true;
                     var manager = new OfcActionManager();
+                    IConfiguaration config = new SimpleConfiguration();
+
+                    // check for rounding
+                    if (result.GetFlag("rounding"))
+                    {
+                        config["rounding"] = true;
+                        var roundingData = result.GetOption<RoundingData>("rounding");
+                        config["roundingMin"] = roundingData.Min;
+                        config["roundingMax"] = roundingData.Max;
+                        config["roundingEpsilon"] = roundingData.Epsilon;
+                    }
+
                     switch (result.LayerId)
                     {
                         // Displays the CLI help
@@ -75,12 +94,12 @@ namespace Ofc
 
                         // Compresses the specified file
                         case CommandLineLayers.CompressFile:
-                            manager.AddCompressFileAction(result[0], result[1]);
+                            manager.AddCompressFileAction(result[0], result[1], config);
                             manager.Handle();
                             break;
                         // Compresses the specified directory
                         case CommandLineLayers.CompressDirectory:
-                            manager.AddCompressDirectoryAction(result[0], result[1], result['r']);
+                            manager.AddCompressDirectoryAction(result[0], result[1], result['r'], config);
                             if (manager.Empty) Console.WriteLine(" WARNING: input folder is empty");
                             manager.Override = result['f'];
                             manager.Parallel = result['p'];

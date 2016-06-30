@@ -17,5 +17,7 @@
         /// <returns>The configuration item as the specified type. Or <c>null</c> if the element does not exist or the element could not be cast.</returns>
         [CanBeNull]
         public static T Get<T>(this IConfiguaration configuaration, string name) => (T)Convert.ChangeType(configuaration[name], typeof(T));
+
+        public static bool True(this IConfiguaration configuaration, string name) => configuaration[name] as bool? ?? false;
     }
 }

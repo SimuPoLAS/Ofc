@@ -32,7 +32,9 @@
         /// <remarks>
         ///     This method will throw an exception if the argument is not registered or is not set.
         /// </remarks>
-        string GetArgument(string name);
+        object GetArgument(string name);
+
+        TV GetArgument<TV>(string name);
 
         /// <summary>
         /// Returns an argument at a specific position. 
@@ -40,7 +42,9 @@
         /// <param name="position">Position of the argument.</param>
         /// <returns>Argument value as <seealso cref="string"/>.</returns>
         /// <exception cref="ArgumentException">There is no argument with the specified position.</exception>
-        string GetArgument(int position);
+        object GetArgument(int position);
+
+        TV GetArgument<TV>(int position);
 
         /// <summary>
         ///     Returns a specifc argument or <c>null</c> if the argument is not set.
@@ -51,7 +55,9 @@
         ///     This method will throw an exception if the argument is not registered.
         /// </remarks>
         [CanBeNull]
-        string GetArgumentOrNull(string name);
+        object GetArgumentOrNull(string name);
+
+        TV GetArgumentOrNull<TV>(string name) where TV : class;
 
         /// <summary>
         /// Returns an argument at a specific position or <c>null</c> if the argument could not be found.
@@ -59,7 +65,9 @@
         /// <param name="index">Position of the argument.</param>
         /// <returns>Argument value as <seealso cref="string"/> or <c>null</c> if the argument could not be found.</returns>
         [CanBeNull]
-        string GetArgumentOrNull(int index);
+        object GetArgumentOrNull(int index);
+
+        TV GetArgumentOrNull<TV>(int position) where TV : class;
 
         /// <summary>
         ///     Returns a specific flag.
@@ -79,7 +87,9 @@
         /// <remarks>
         ///     This method will throw an exception if the option is not registered or set.
         /// </remarks>
-        string GetOption(string name);
+        object GetOption(string name);
+
+        TV GetOption<TV>(string name);
 
         /// <summary>
         ///     Returns a specifc option or <c>null</c> if the option is not set.
@@ -90,8 +100,9 @@
         ///     This method will throw an exception if the option is not registered.
         /// </remarks>
         [CanBeNull]
-        string GetOptionOrNull(string name);
+        object GetOptionOrNull(string name);
 
+        TV GetOptionOrNull<TV>(string name) where TV : class;
 
         /// <summary>
         /// Returns an argument at a specific position.

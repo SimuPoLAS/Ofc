@@ -6,10 +6,10 @@
 
     internal class ArgumentResult<T> : IArgumentResult<T>
     {
-        [ItemNotNull] private List<string> _arguments;
+        [ItemNotNull] private List<object> _arguments;
         [ItemNotNull] private List<string> _argumentNames;
         private Dictionary<string, bool> _flags;
-        private Dictionary<string, string> _options;
+        private Dictionary<string, object> _options;
 
 
         /// <summary>
@@ -30,9 +30,13 @@
         {
             Success = false;
             LayerId = default(T);
+            _arguments = new List<object>();
+            _argumentNames = new List<string>();
+            _flags = new Dictionary<string, bool>();
+            _options = new Dictionary<string, object>();
         }
 
-        public ArgumentResult(T layerId, [ItemNotNull] List<string> arguments, List<string> argumentNames, Dictionary<string, bool> flags, Dictionary<string, string> options)
+        public ArgumentResult(T layerId, [ItemNotNull] List<object> arguments, List<string> argumentNames, Dictionary<string, bool> flags, Dictionary<string, object> options)
         {
             if (arguments == null) throw new ArgumentNullException(nameof(arguments));
             if (argumentNames == null) throw new ArgumentNullException(nameof(argumentNames));
@@ -57,12 +61,14 @@
         /// <remarks>
         ///     This method will throw an exception if the argument is not registered or is not set.
         /// </remarks>
-        public string GetArgument(string name)
+        public object GetArgument(string name)
         {
             var index = _argumentNames.IndexOf(name);
             if (index == -1) throw new ArgumentException("Could not find the target argument.");
             return GetArgument(index);
         }
+
+        public TV GetArgument<TV>(string name) => (TV) GetArgument(name);
 
         /// <summary>
         ///     Returns an argument at a specific position.
@@ -70,11 +76,13 @@
         /// <param name="position">Position of the argument.</param>
         /// <returns>Argument value as <seealso cref="string" />.</returns>
         /// <exception cref="ArgumentException">There is no argument with the specified position.</exception>
-        public string GetArgument(int position)
+        public object GetArgument(int position)
         {
             if (position < 0 || position >= _arguments.Count) throw new ArgumentException("Could not find the target argument.");
             return _arguments[position];
         }
+
+        public TV GetArgument<TV>(int position) => (TV) GetArgument(position);
 
         /// <summary>
         ///     Returns a specifc argument or <c>null</c> if the argument is not set.
@@ -85,11 +93,13 @@
         ///     This method will throw an exception if the argument is not registered.
         /// </remarks>
         [CanBeNull]
-        public string GetArgumentOrNull(string name)
+        public object GetArgumentOrNull(string name)
         {
             var index = _argumentNames.IndexOf(name);
             return index == -1 ? null : GetArgumentOrNull(index);
         }
+
+        public TV GetArgumentOrNull<TV>(string name) where TV : class => GetArgument(name) as TV;
 
         /// <summary>
         ///     Returns an argument at a specific position or <c>null</c> if the argument could not be found.
@@ -97,11 +107,13 @@
         /// <param name="index">Position of the argument.</param>
         /// <returns>Argument value as <seealso cref="string" /> or <c>null</c> if the argument could not be found.</returns>
         [CanBeNull]
-        public string GetArgumentOrNull(int index)
+        public object GetArgumentOrNull(int index)
         {
             if (index < 0 || index >= _arguments.Count) return null;
             return _arguments[index];
         }
+
+        public TV GetArgumentOrNull<TV>(int position) where TV : class => GetArgument(position) as TV;
 
         /// <summary>
         ///     Returns a specific flag.
@@ -125,12 +137,14 @@
         /// <remarks>
         ///     This method will throw an exception if the option is not registered or set.
         /// </remarks>
-        public string GetOption(string name)
+        public object GetOption(string name)
         {
-            string item;
+            object item;
             if (!_options.TryGetValue(name, out item) || item == null) throw new ArgumentException("Could not find the target argument.");
             return item;
         }
+
+        public TV GetOption<TV>(string name) => (TV) GetOption(name);
 
         /// <summary>
         ///     Returns a specifc option or <c>null</c> if the option is not set.
@@ -140,11 +154,13 @@
         /// <remarks>
         ///     This method will throw an exception if the option is not registered.
         /// </remarks>
-        public string GetOptionOrNull(string name)
+        public object GetOptionOrNull(string name)
         {
-            string item;
+            object item;
             return !_options.TryGetValue(name, out item) ? null : item;
         }
+
+        public TV GetOptionOrNull<TV>(string name) where TV : class => GetOption(name) as TV;
 
 
         /// <summary>
@@ -153,7 +169,7 @@
         /// <param name="index">Position of the argument.</param>
         /// <returns>Argument value as <seealso cref="string" /> or <c>null</c> if the argument could not be found.</returns>
         [CanBeNull]
-        public string this[int index] => GetArgumentOrNull(index);
+        public string this[int index] => GetArgumentOrNull<string>(index);
 
         /// <summary>
         ///     Returns an argument or an option depending on the name.
@@ -165,8 +181,8 @@
         {
             get
             {
-                if (name.StartsWith("--")) return GetOptionOrNull(name.Substring(2));
-                return name.StartsWith("-") ? GetOptionOrNull(name.Substring(1)) : GetArgumentOrNull(name);
+                if (name.StartsWith("--")) return GetOptionOrNull<string>(name.Substring(2));
+                return name.StartsWith("-") ? GetOptionOrNull<string>(name.Substring(1)) : GetArgumentOrNull<string>(name);
             }
         }
 
