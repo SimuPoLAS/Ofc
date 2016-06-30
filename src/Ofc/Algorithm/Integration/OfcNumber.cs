@@ -25,7 +25,10 @@
         {
             IsNegative = number < 0;
             Number = Math.Abs(number);
-            Exponent = exponent;
+            if (Number != 0)
+                Exponent = exponent;
+            else
+                Exponent = 0;
             NeededBitsNumber = Number.GetNeededBits();
             NeededBitsExponent = Utility.GetNeededBits(Math.Abs(Exponent));
             //RecalculateMetadata();
