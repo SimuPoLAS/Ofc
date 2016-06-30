@@ -51,7 +51,7 @@ namespace Ofc
                 argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Displays the current version of the tool."));
 
                 argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<RoundingData>()).Option('f').Option('r').Option('p');
-                argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output");
+                argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<RoundingData>()).Option('f');
 
                 argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output").Option('f').Option('r').Option('p');
                 argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompresses the specified compressed file or set of files.").Argument("input").Argument("output").Argument("data", true).Option('f');
@@ -95,6 +95,7 @@ namespace Ofc
                         // Compresses the specified file
                         case CommandLineLayers.CompressFile:
                             manager.AddCompressFileAction(result[0], result[1], config);
+                            manager.Override = result['f'];
                             manager.Handle();
                             break;
                         // Compresses the specified directory
