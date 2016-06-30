@@ -37,19 +37,19 @@
             switch (code)
             {
                 case LexerExceptionCodes.InvalidEscapeSequence:
-                    return Resources.LexerErrorInvalidEscapeSequence;
+                    return "Invalid escape sequence '{0}'";
                 case LexerExceptionCodes.Unknown:
-                    return Resources.LexerErrorUnknown;
+                    return "Unknown lexer error.";
                 case LexerExceptionCodes.UnexpectedEndOfStream:
-                    return Resources.LexerErrorUnexpectedEndOfStream;
+                    return "Unexpected end of stream.";
                 case LexerExceptionCodes.UnexpectedSymbol:
-                    return length == 0 ? Resources.LexerErrorUnexpectedSymbol : Resources.LexerErrorUnexpectedSymbol1;
+                    return length == 0 ? "Unexpected symbol." : "Unexpected symbol '{0}'.";
                 case LexerExceptionCodes.UnterminatedBlockComment:
-                    return Resources.LexerErrorUnterminatedBlockComment;
+                    return "Unterminated block comment.";
                 case LexerExceptionCodes.UnterminatedStringLiteral:
-                    return Resources.LexerErrorUnterminatedStringLiteral;
+                    return "Unterminated string literal.";
                 case LexerExceptionCodes.UnterminatedStringContainer:
-                    return Resources.LexerErrorUnterminatedStringContainer;
+                    return "Unterminated string container.";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(code), code, null);
             }
