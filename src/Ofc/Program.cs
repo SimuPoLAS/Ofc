@@ -43,15 +43,12 @@ namespace Ofc
                 argumentParser.Description = "A command line tool for compressing Open Foam files.";
                 argumentParser.Name = "ofc.exe";
 
-                // register validators
-                argumentParser.Validator<RoundingData>(new RoudingValidator());
-
                 // add parser definitions
                 argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Displays this help message."));
                 argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Displays the current version of the tool."));
 
-                argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<RoundingData>()).Option('f').Option('r').Option('p');
-                argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<RoundingData>()).Option('f');
+                argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<byte>()).Option('f').Option('r').Option('p');
+                argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<byte>()).Option('f');
 
                 argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output").Option('f').Option('r').Option('p');
                 argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompresses the specified compressed file or set of files.").Argument("input").Argument("output").Argument("data", true).Option('f');
@@ -75,10 +72,7 @@ namespace Ofc
                     if (result.GetFlag("rounding"))
                     {
                         config["rounding"] = true;
-                        var roundingData = result.GetOption<RoundingData>("rounding");
-                        config["roundingMin"] = roundingData.Min;
-                        config["roundingMax"] = roundingData.Max;
-                        config["roundingEpsilon"] = roundingData.Epsilon;
+                        config["roundingDecimals"] = result.GetOption<byte>("rounding");
                     }
 
                     switch (result.LayerId)

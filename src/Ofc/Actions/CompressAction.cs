@@ -2,14 +2,17 @@
 {
     using System;
     using System.IO;
+    using System.Text;
     using Ofc.Algorithm.Blocky.Integration;
     using Ofc.Algorithm.Integration;
     using Ofc.Algorithm.Rounding;
+    using Ofc.Algorithm.RoundingDigits;
     using Ofc.Core;
     using Ofc.IO;
     using Ofc.LZMA.Helper;
     using Ofc.Parsing;
     using Ofc.Parsing.Hooks;
+    using Ofc.Util;
 
     internal class CompressAction : IOfcAction
     {
@@ -73,11 +76,13 @@
                 using (var binaryOutput = File.OpenWrite(_dataPath + ActionUtils.TempFileExtention))
                 {
                     Status = 1;
-                    var algorithm = _configuaration.True("rounding") ? (IAlgorithm<OfcNumber>) new RounderAlgorithm(new BlockyAlgorithm()) : new BlockyAlgorithm();
-                    var converter = new CompressionDataConverter();
+                    MarerHook hook;
+                    if (_configuaration.True("rounding")) // todo remove (migrate)
+                        hook = new MarerHook<double>(new RoundingDigitsAlgorithm(), new DoubleDataConverter(), binaryOutput, _configuaration);
+                    else hook = new MarerHook<OfcNumber>(new BlockyAlgorithm(), new CompressionDataConverter(), binaryOutput, _configuaration);
 
                     Status = 2;
-                    var hook = new MarerHook<OfcNumber>(algorithm, converter, binaryOutput, _configuaration);
+                    //var hook = new MarerHook<OfcNumber>(algorithm, converter, binaryOutput, _configuaration);
 
                     Status = 3;
                     var f = false;
