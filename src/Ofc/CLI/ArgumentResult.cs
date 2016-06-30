@@ -99,7 +99,7 @@
             return index == -1 ? null : GetArgumentOrNull(index);
         }
 
-        public TV GetArgumentOrNull<TV>(string name) where TV : class => GetArgument(name) as TV;
+        public TV GetArgumentOrNull<TV>(string name) where TV : class => GetArgumentOrNull(name) as TV;
 
         /// <summary>
         ///     Returns an argument at a specific position or <c>null</c> if the argument could not be found.
@@ -113,7 +113,7 @@
             return _arguments[index];
         }
 
-        public TV GetArgumentOrNull<TV>(int position) where TV : class => GetArgument(position) as TV;
+        public TV GetArgumentOrNull<TV>(int position) where TV : class => GetArgumentOrNull(position) as TV;
 
         /// <summary>
         ///     Returns a specific flag.
@@ -160,7 +160,7 @@
             return !_options.TryGetValue(name, out item) ? null : item;
         }
 
-        public TV GetOptionOrNull<TV>(string name) where TV : class => GetOption(name) as TV;
+        public TV GetOptionOrNull<TV>(string name) where TV : class => GetOptionOrNull(name) as TV;
 
 
         /// <summary>

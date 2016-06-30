@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace ConsoleApp1
+﻿namespace Ofc.Util.Huffman
 {
+    using System;
+    using System.Collections.Generic;
+
     public interface IHuffmanNode<T> : IComparable<IHuffmanNode<T>> where T : IEquatable<T>
     {
         IHuffmanNode<T> LeftNode { get; set; }

@@ -26,18 +26,6 @@ namespace Ofc.CLI
         private IValidatorContainer _container = new ValidatorContainer();
 
 
-        public ArgumentParser()
-        {
-            _container.SetValidator<byte>(new FuncValidator((string v, ref object d) =>
-            {
-                byte value;
-                if (!byte.TryParse(v, out value)) return false;
-                d = value;
-                return true;
-            }));
-        }
-
-
         /// <summary>
         ///     Description of the program which will be displayed in the help section.
         /// </summary>

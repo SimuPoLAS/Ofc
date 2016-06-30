@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using ConsoleApp1;
 using Ofc.LZMA.Compatibility;
 using Ofc.Util;
 

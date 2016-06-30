@@ -13,6 +13,7 @@
     using Ofc.Parsing;
     using Ofc.Parsing.Hooks;
     using Ofc.Util;
+    using Ofc.Util.Converters;
 
     internal class CompressAction : IOfcAction
     {
@@ -77,8 +78,8 @@
                 {
                     Status = 1;
                     MarerHook hook;
-                    if (_configuaration.True("rounding")) // todo remove (migrate)
-                        hook = new MarerHook<double>(new RoundingDigitsAlgorithm(), new DoubleDataConverter(), binaryOutput, _configuaration);
+                    if (_configuaration.True("rounding"))
+                        hook = new MarerHook<string>(new RoundingDigitsAlgorithm(new BlockyAlgorithm()), new NoDataConverter(), binaryOutput, _configuaration);
                     else hook = new MarerHook<OfcNumber>(new BlockyAlgorithm(), new CompressionDataConverter(), binaryOutput, _configuaration);
 
                     Status = 2;

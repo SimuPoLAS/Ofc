@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace ConsoleApp1
+﻿namespace Ofc.Util.Huffman
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     public class HuffmanCoding<T> where T : IEquatable<T>
     {
         private readonly IEnumerable<HuffmanLeafNode<T>> _occurenceValue;

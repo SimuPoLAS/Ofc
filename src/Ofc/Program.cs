@@ -43,12 +43,21 @@ namespace Ofc
                 argumentParser.Description = "A command line tool for compressing Open Foam files.";
                 argumentParser.Name = "ofc.exe";
 
+                // add validators
+                argumentParser.Validator<int>(new FuncValidator((string v, ref object d) =>
+                {
+                    int value;
+                    if (!int.TryParse(v, out value)) return false;
+                    d = value;
+                    return true;
+                }));
+
                 // add parser definitions
                 argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Displays this help message."));
                 argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Displays the current version of the tool."));
 
-                argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<byte>()).Option('f').Option('r').Option('p');
-                argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<byte>()).Option('f');
+                argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<int>()).Option('f').Option('r').Option('p');
+                argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<int>()).Option('f');
 
                 argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output").Option('f').Option('r').Option('p');
                 argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompresses the specified compressed file or set of files.").Argument("input").Argument("output").Argument("data", true).Option('f');
@@ -72,7 +81,7 @@ namespace Ofc
                     if (result.GetFlag("rounding"))
                     {
                         config["rounding"] = true;
-                        config["roundingDecimals"] = result.GetOption<byte>("rounding");
+                        config["roundingDecimals"] = result.GetOption<int>("rounding");
                     }
 
                     switch (result.LayerId)
@@ -83,7 +92,7 @@ namespace Ofc
                             break;
                         // Displays the current version
                         case CommandLineLayers.Version:
-                            Console.WriteLine($"{argumentParser.Name} [v1.0.000]");
+                            Console.WriteLine($"{argumentParser.Name} [v1.0]");
                             break;
 
                         // Compresses the specified file

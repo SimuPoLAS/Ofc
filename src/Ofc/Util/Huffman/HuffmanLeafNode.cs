@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace ConsoleApp1
+﻿namespace Ofc.Util.Huffman
 {
+    using System;
+
     public class HuffmanLeafNode<T> : HuffmanNode<T> where T : IEquatable<T>
     {
         public readonly T Value;

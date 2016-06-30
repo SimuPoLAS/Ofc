@@ -1,4 +1,4 @@
-﻿namespace Ofc.Util
+﻿namespace Ofc.Util.Converters
 {
     using System;
     using System.Globalization;
