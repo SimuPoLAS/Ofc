@@ -84,9 +84,9 @@ namespace Ofc.Algorithm.Blocky
             Metadata.MaxNeededBitsNeededBitsNumber = Utility.GetNeededBits(Metadata.MaxNeededBitsNumber);
 
             _blockfinding = new Blockfinding.Blockfinding(Values, Metadata);
-            Blocks = _blockfinding.FindAllBlocks();
+            Blocks = new List<Block>();//_blockfinding.FindAllBlocks());
 
-            PostCompressionOptimisation(); //Todo: make optional
+            //PostCompressionOptimisation(); //Todo: make optional
 
             Write();
         }
