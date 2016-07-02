@@ -149,10 +149,6 @@ namespace Ofc.Algorithm.Blocky.Blockfinding
         {
             while (ProcessNextValue())
             {
-                if (_blocks.Count(item => item.Index == 96) > 1)
-                {
-                    
-                }
 #if DEBUG
                 if (_index >= _debugJump)
                     ViewStateDebug();

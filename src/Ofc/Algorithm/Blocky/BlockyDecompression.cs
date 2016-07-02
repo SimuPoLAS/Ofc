@@ -61,10 +61,7 @@ namespace Ofc.Algorithm.Blocky
                 {
                     var block = DecompressionMethod.ReadDefaultBlockHeader(_bitReader, Metadata);
                     var method = GetMethodForBlock(block); // Get decompressor class for block type
-                    Console.WriteLine(valueCount + " " + block);
-                    //((DummyReporter)_writer).FileStream.WriteLine(method.GetType().Name + " Start");
                     valueCount += method.Read(_numberWriter, block, _bitReader);
-                    //((DummyReporter)_writer).FileStream.WriteLine(method.GetType().Name + " End");
                 }
                 else
                 {

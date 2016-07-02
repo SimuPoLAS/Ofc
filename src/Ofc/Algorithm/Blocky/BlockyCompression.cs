@@ -78,17 +78,17 @@ namespace Ofc.Algorithm.Blocky
         /// </summary>
         public void Finish()
         {
-            if (Values.Count == 0) return;
+                if (Values.Count == 0) return;
 
-            Metadata = BlockyMetadata.FromData(Values);
-            Metadata.MaxNeededBitsNeededBitsNumber = Utility.GetNeededBits(Metadata.MaxNeededBitsNumber);
+                Metadata = BlockyMetadata.FromData(Values);
+                Metadata.MaxNeededBitsNeededBitsNumber = Utility.GetNeededBits(Metadata.MaxNeededBitsNumber);
 
-            _blockfinding = new Blockfinding.Blockfinding(Values, Metadata);
-            Blocks = new List<Block>();//_blockfinding.FindAllBlocks());
+                _blockfinding = new Blockfinding.Blockfinding(Values, Metadata);
+                Blocks = _blockfinding.FindAllBlocks();
 
-            //PostCompressionOptimisation(); //Todo: make optional
+                PostCompressionOptimisation(); //Todo: make optional
 
-            Write();
+                Write();
         }
 
         private void PostCompressionOptimisation()
@@ -103,29 +103,29 @@ namespace Ofc.Algorithm.Blocky
             var currentBlockLength = blockCount == 0 ? 0 : Blocks[currentBlockIndex].Length;
             var totalBlockValues = currentBlockLength;
 
-            if (!Metadata.NoExponent)
-            {
-                _huffman = new HuffmanCreator((ushort)Math.Pow(2, 10));
+            //if (!Metadata.NoExponent)
+            //{
+            //    _huffman = new HuffmanCreator((ushort)Math.Pow(2, 10));
 
-                var huffIndex = 0;
-                while (huffIndex < valueCount)
-                {
-                    for (; huffIndex < nextStop; huffIndex++)
-                    {
-                        _huffman.AddOccurence(Values[huffIndex].Exponent);
-                    }
+            //    var huffIndex = 0;
+            //    while (huffIndex < valueCount)
+            //    {
+            //        for (; huffIndex < nextStop; huffIndex++)
+            //        {
+            //            _huffman.AddOccurence(Values[huffIndex].Exponent);
+            //        }
 
-                    if (++currentBlockIndex >= Blocks.Count)
-                        nextStop = valueCount;
-                    else
-                    {
-                        huffIndex += currentBlockLength;
-                        nextStop = Blocks[currentBlockIndex].Index;
-                        currentBlockLength = Blocks[currentBlockIndex].Length;
-                        totalBlockValues += currentBlockLength;
-                    }
-                }
-            }
+            //        if (++currentBlockIndex >= Blocks.Count)
+            //            nextStop = valueCount;
+            //        else
+            //        {
+            //            huffIndex += currentBlockLength;
+            //            nextStop = Blocks[currentBlockIndex].Index;
+            //            currentBlockLength = Blocks[currentBlockIndex].Length;
+            //            totalBlockValues += currentBlockLength;
+            //        }
+            //    }
+            //}
             _totalPostCompressionOptimisationBlockValues = totalBlockValues;
             #endregion
 
