@@ -40,10 +40,10 @@
 
         public DecompressAction(string basePath, string metaPath, string dataPath, bool isLzma, string destination)
         {
-            _metaPath = metaPath;
-            _dataPath = dataPath;
+            _metaPath = System.IO.Path.GetFullPath(metaPath);
+            _dataPath = System.IO.Path.GetFullPath(dataPath);
             _isLzma = isLzma;
-            _destination = destination;
+            _destination = System.IO.Path.GetFullPath(destination);
             _relativePath = basePath != null && _metaPath.StartsWith(basePath) ? _metaPath.Substring(basePath.Length) : _metaPath;
         }
 
