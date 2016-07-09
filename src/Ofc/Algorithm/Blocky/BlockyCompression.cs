@@ -2,6 +2,8 @@
 // ReSharper disable LoopCanBeConvertedToQuery
 // ReSharper disable InvertIf
 
+using System.Security.Cryptography.X509Certificates;
+
 namespace Ofc.Algorithm.Blocky
 {
     using System;
@@ -82,9 +84,9 @@ namespace Ofc.Algorithm.Blocky
             Metadata.MaxNeededBitsNeededBitsNumber = Utility.GetNeededBits(Metadata.MaxNeededBitsNumber);
 
             _blockfinding = new Blockfinding.Blockfinding(Values, Metadata);
-            Blocks = _blockfinding.FindAllBlocks();
+            Blocks = new List<Block>();//_blockfinding.FindAllBlocks());
 
-            PostCompressionOptimisation(); //Todo: make optional
+            //PostCompressionOptimisation(); //Todo: make optional
 
             Write();
         }
@@ -206,6 +208,7 @@ namespace Ofc.Algorithm.Blocky
                     }
 
                     _writer.WriteByte(0, 1);
+                   
                     if (!Metadata.IsAbsolute)
                         _writer.WriteByte((byte)(value.IsNegative ? 1 : 0), 1);
                     _writer.Write((ulong)value.Number, Metadata.MaxNeededBitsNumber);
@@ -222,6 +225,7 @@ namespace Ofc.Algorithm.Blocky
 
                 if (++currentBlockIndex < blockCount)
                 {
+                //    Console.WriteLine(Blocks[currentBlockIndex - 1]);
                     Blocks[currentBlockIndex - 1].Method.Write(_writer, Blocks[currentBlockIndex - 1], ref i);
                     nextStop = Blocks[currentBlockIndex].Index;
                 }

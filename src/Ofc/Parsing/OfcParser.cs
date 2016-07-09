@@ -24,6 +24,9 @@ namespace Ofc.Parsing
         private readonly IParserHook<string> _hook;
 
 
+        internal bool SimpleAnonyomousLists { get; set; }
+
+
         public OfcParser([CanBeNull] IInputStream<OfcToken> input) : this(input, null)
         {
         }
@@ -119,6 +122,16 @@ namespace Ofc.Parsing
             return true;
         }
 
+        private bool ExpectSafe(OfcTokenType[] types)
+        {
+            if (types.Length > ushort.MaxValue) throw new ArgumentOutOfRangeException(nameof(types));
+            if (!Needs(types.Length)) return false;
+            for (var i = 0; i < types.Length; i++)
+                if (_buffer[_position + i].Type != types[i])
+                    return false;
+            return true;
+        }
+
 
         internal void Parse()
         {
@@ -149,6 +162,11 @@ namespace Ofc.Parsing
                 if (tkn.Type == OfcTokenType.HASHTAG)
                 {
                     ParseDirective();
+                    continue;
+                }
+                if (tkn.Type == OfcTokenType.SEMICOLON)
+                {
+                    Skip(1);
                     continue;
                 }
 
@@ -331,38 +349,7 @@ namespace Ofc.Parsing
                         }
                         if (!Expect(OfcTokenType.PARENTHESE_OPEN)) throw new ParserException();
                         Skip(1);
-                        _hook.EnterList(type, amount);
-                        var done = false;
-                        var d = false;
-                        do
-                        {
-                            if (!Needs(1)) throw new ParserException();
-                            c = _buffer[_position];
-                            if (c.Type == OfcTokenType.PARENTHESE_CLOSE)
-                            {
-                                d = true;
-                                _hook.LeaveList();
-                                Skip(1);
-                                done = true;
-                                break;
-                            }
-                            switch (type)
-                            {
-                                case OfcListType.Scalar:
-                                    ParseScalar();
-                                    break;
-                                case OfcListType.Vector:
-                                    ParseVector();
-                                    break;
-                                case OfcListType.Tensor:
-                                    ParseTensor();
-                                    break;
-                                default:
-                                    throw new Exception("Not supported list type: " + type);
-                            }
-                        } while (!(_eos && _length == 0));
-                        if (!d) _hook.LeaveList();
-                        if (!done) throw new ParserException();
+                        ParseList(type, amount);
                         return;
                     }
 
@@ -404,10 +391,65 @@ namespace Ofc.Parsing
             }
         }
 
+        private void ParseList(OfcListType type, int amount)
+        {
+            OfcToken c;
+            _hook.EnterList(type, amount);
+            var done = false;
+            var d = false;
+            do
+            {
+                if (!Needs(1)) throw new ParserException();
+                c = _buffer[_position];
+                if (c.Type == OfcTokenType.PARENTHESE_CLOSE)
+                {
+                    d = true;
+                    _hook.LeaveList();
+                    Skip(1);
+                    done = true;
+                    break;
+                }
+                switch (type)
+                {
+                    case OfcListType.Scalar:
+                        ParseScalar();
+                        break;
+                    case OfcListType.Vector:
+                        ParseVector();
+                        break;
+                    case OfcListType.Tensor:
+                        ParseTensor();
+                        break;
+                    default:
+                        throw new Exception("Not supported list type: " + type);
+                }
+            } while (!(_eos && _length == 0));
+            if (!d) _hook.LeaveList();
+            if (!done) throw new ParserException();
+        }
+
         private void ParseAnonymousList(int number = -1)
         {
             if (!Needs(1)) throw new ParserException();
             var c = _buffer[_position];
+            if (SimpleAnonyomousLists)
+            {
+                if (c.Type == OfcTokenType.NUMBER)
+                {
+                    ParseList(OfcListType.Scalar, number);
+                    return;
+                }
+                if (ExpectSafe(new[] { OfcTokenType.PARENTHESE_OPEN, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.PARENTHESE_CLOSE, }))
+                {
+                    ParseList(OfcListType.Vector, number);
+                    return;
+                }
+                if (ExpectSafe(new[] { OfcTokenType.PARENTHESE_OPEN, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.NUMBER, OfcTokenType.PARENTHESE_CLOSE, }))
+                {
+                    ParseList(OfcListType.Tensor, number);
+                    return;
+                }
+            }
             _hook.EnterList(OfcListType.Anonymous, number);
             for (; c.Type != OfcTokenType.PARENTHESE_CLOSE; c = _buffer[_position])
             {

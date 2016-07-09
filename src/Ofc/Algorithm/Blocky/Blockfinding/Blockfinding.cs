@@ -149,6 +149,10 @@ namespace Ofc.Algorithm.Blocky.Blockfinding
         {
             while (ProcessNextValue())
             {
+                if (_blocks.Count(item => item.Index == 96) > 1)
+                {
+                    
+                }
 #if DEBUG
                 if (_index >= _debugJump)
                     ViewStateDebug();
@@ -166,9 +170,9 @@ namespace Ofc.Algorithm.Blocky.Blockfinding
         {
             if (!_debugEnabled) return;
 
-#if DNX451
+//#if DNX451
             Console.Clear();
-#endif
+//#endif
             // BUG: needs a clear
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine("Blocks that are really there");
@@ -366,6 +370,11 @@ namespace Ofc.Algorithm.Blocky.Blockfinding
             _appendingCalculation = with;
             _appendingCalculation.SavedBits = 0;
             _appendingCalculationSavingGrade = (int)with.VirtualBlock.GetSavingGrade();
+
+            for (var i = 1; i < _replacingCalculations.Length; i++)
+            {
+                _replacingCalculations[i].IsValid = false;
+            }
         }
 
         /// <summary>
