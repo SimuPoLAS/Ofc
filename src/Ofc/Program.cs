@@ -11,8 +11,9 @@
 namespace Ofc
 {
     using System;
-    using System.Diagnostics;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Text;
     using JetBrains.Annotations;
     using Ofc.Actions;
     using Ofc.Algorithm.Blocky.Integration;
@@ -34,13 +35,73 @@ namespace Ofc
         [UsedImplicitly]
         public static void Main(string[] args)
         {
+            // debug stuff
+#if DEBUG
+            if (args.Length == 0)
+            {
+                // input for arguments
+                Console.Write("args: ");
+                var input = Console.ReadLine();
+                Console.Clear();
+
+                // string builder for string operations
+                var sb = new StringBuilder();
+
+                // if not empty
+                if (!string.IsNullOrWhiteSpace(input))
+                {
+                    var rargs = new List<string>();
+                    var inLiteral = false;
+                    for (var i = 0; i < input.Length; i++)
+                    {
+                        var c = input[i];
+                        if (inLiteral)
+                        {
+                            if (c == '"')
+                            {
+                                if (i != input.Length - 1 && input[i + 1] == '"') sb.Append('"');
+                                else inLiteral = false;
+                            }
+                            else sb.Append(c);
+                        }
+                        else
+                        {
+                            if (char.IsWhiteSpace(c))
+                            {
+                                if (sb.Length == 0) continue;
+                                rargs.Add(sb.ToString());
+                                sb.Length = 0;
+                            }
+                            else if (c == '"') inLiteral = true;
+                            else sb.Append(c);
+                        }
+                    }
+                    if (sb.Length != 0) rargs.Add(sb.ToString());
+                    args = rargs.ToArray();
+                }
+
+                // provide info
+                Console.WriteLine($"calling with {args.Length} arguments");
+                
+                // show the arguments that will be passed over
+                sb.Length = 0;
+                sb.Append('[');
+                var l = args.Length;
+                for (var i = 0; i < l; i++)
+                    sb.Append($"\"{args[i]}\"{(i != l - 1 ? ", " : string.Empty)}");
+                sb.Append(']');
+                Console.WriteLine(sb.ToString());
+                Console.WriteLine();
+            }
+#endif
+
             try
             {
                 BlockyAlgorithm.SetBlockfindingDebugConsoleEnabled(false);
 
                 // initiate the parser
                 IArgumentParser<CommandLineLayers> argumentParser = new ArgumentParser<CommandLineLayers>();
-                argumentParser.Description = "A command line tool for compressing Open Foam files.";
+                argumentParser.Description = "A command line tool for compressing Open Foam (r) files.";
                 argumentParser.Name = "ofc.exe";
 
                 // add validators
@@ -53,19 +114,21 @@ namespace Ofc
                 }));
 
                 // add parser definitions
-                argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Displays this help message."));
-                argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Displays the current version of the tool."));
+                argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Display this help message."));
+                argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Display the current version of the tool."));
 
-                argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compresses the specified directory.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<int>()).Option('f').Option('r').Option('p').Option('s');
-                argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compresses the specified file.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<int>()).Option('f').Option('s');
+                argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compress the specified directory.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<int>()).Option('f').Option('r').Option('p').Option('s');
+                argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compress the specified file.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<int>()).Option('f').Option('s');
 
-                argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompresses the specified compressed directory.").Argument("input").Argument("output").Option('f').Option('r').Option('p');
-                argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompresses the specified compressed file or set of files.").Argument("input").Argument("output").Argument("data", true).Option('f');
+                argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompress the specified compressed directory.").Argument("input").Argument("output").Option('f').Option('r').Option('p');
+                argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompress the specified compressed file or directory.").Argument("input").Argument("output").Argument("data", true).Option('f');
 
-                argumentParser.NewOption().SetShortName('f').Description("Enables force mode.");
-                argumentParser.NewOption().SetShortName('r').Description("Enables recursive compression/decompression.");
-                argumentParser.NewOption().SetShortName('p').Description("Enables parallel compression/decompression.");
-                
+                argumentParser.NewOption().SetLongName("rounding").Description("Enable rounding to the specified amount of digits.");
+                argumentParser.NewOption().SetShortName('f').Description("Force overriding of files.");
+                argumentParser.NewOption().SetShortName('r').Description("Enable recursive compression/decompression.");
+                argumentParser.NewOption().SetShortName('p').Description("Enable parallel compression/decompression.");
+                argumentParser.NewOption().SetShortName('s').Description("Treat anonymous lists as lists of one type.");
+
                 // parse the arguments
                 var result = argumentParser.Parse(args);
 
