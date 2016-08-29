@@ -1,4 +1,8 @@
-﻿namespace Ofc.Actions
+﻿using Ofc.Algorithm.Zetty;
+using Ofc.Core.Configurations;
+using Ofc.Util.Converters;
+
+namespace Ofc.Actions
 {
     using System;
     using System.IO;
@@ -106,14 +110,14 @@
                     }
 
                     Status = 109;
-                    using (var output = File.OpenWrite(_destination) )
+                    using (var output = File.OpenWrite(_destination))
                     {
                         Status = 110;
                         using (var outputText = new StreamWriter(output))
                         {
                             Status = 111;
-                            var algorithm = new BlockyAlgorithm();
-                            var converter = new CompressionDataConverter();
+                            var algorithm = new ZettyAlgorithm(EmptyConfiguration.Instance);
+                            var converter = new NoDataConverter();
 
                             Status = 112;
                             using (var meta = File.OpenText(_metaPath + ActionUtils.TempFileExtention))
@@ -125,7 +129,7 @@
                                     using (var data = File.OpenRead(_dataPath + ActionUtils.TempFileExtention))
                                     {
                                         Status = 115;
-                                        using (var reader = new MarerReader<OfcNumber>(meta, outputText, algorithm, converter, data))
+                                        using (var reader = new MarerReader<string>(meta, outputText, algorithm, converter, data))
                                         {
                                             Status = 116;
                                             reader.Do();
@@ -138,7 +142,7 @@
                                 else
                                 {
                                     Status = 130;
-                                    using (var reader = new MarerReader<OfcNumber>(meta, outputText, algorithm, converter, null))
+                                    using (var reader = new MarerReader<string>(meta, outputText, algorithm, converter, null))
                                     {
                                         Status = 131;
                                         reader.Do();
@@ -154,9 +158,9 @@
                     Status = 142;
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                Message = "?";
+                Message = "Internal: " + exception.Message;
                 throw;
             }
         }

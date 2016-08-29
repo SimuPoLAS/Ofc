@@ -1,4 +1,6 @@
-﻿namespace Ofc.Actions
+﻿using Ofc.Algorithm.Zetty;
+
+namespace Ofc.Actions
 {
     using System;
     using System.IO;
@@ -79,8 +81,8 @@
                     Status = 1;
                     MarerHook hook;
                     if (_configuaration.True("rounding"))
-                        hook = new MarerHook<string>(new RoundingDigitsAlgorithm(new BlockyAlgorithm()), new NoDataConverter(), binaryOutput, _configuaration);
-                    else hook = new MarerHook<OfcNumber>(new BlockyAlgorithm(), new CompressionDataConverter(), binaryOutput, _configuaration);
+                        hook = new MarerHook<string>(new RoundingDigitsAlgorithm<string>(new ZettyAlgorithm(_configuaration)), new NoDataConverter(), binaryOutput, _configuaration);
+                    else hook = new MarerHook<string>(new ZettyAlgorithm(_configuaration), new NoDataConverter(), binaryOutput, _configuaration);
 
                     Status = 2;
                     //var hook = new MarerHook<OfcNumber>(algorithm, converter, binaryOutput, _configuaration);
@@ -179,9 +181,9 @@
                 Message = "Access failed.";
                 throw;
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                Message = "?";
+                Message = "Internal: " + exception.Message;
                 throw;
             }
         }
