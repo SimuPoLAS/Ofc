@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using Ofc.LZMA.Compatibility;
 using Ofc.Util;
 
 // ReSharper disable ForCanBeConvertedToForeach
@@ -9,9 +6,7 @@ using Ofc.Util;
 
 namespace Ofc.Algorithm.Zetty
 {
-    using System.Collections.Generic;
     using System.IO;
-    using Ofc.Algorithm.Integration;
     using Ofc.Core;
 
     public class ZettyCompression : IReporter<string>
@@ -21,7 +16,6 @@ namespace Ofc.Algorithm.Zetty
         public IConfiguaration Configuaration { get; }
         private readonly string[] _values;
         private int _valueIndex;
-        private int[] VORKOMMEN = new int[10];
 
         public ZettyCompression(Stream outStream, int maxBlockSize = 102400)
         {
@@ -49,17 +43,11 @@ namespace Ofc.Algorithm.Zetty
         private void FinishBlock()
         {
             var maxNumberLength = 1;
-            //var minNumberLength = int.MaxValue;
-            //var minExpLength = int.MaxValue;
             var maxTotalLength = 1;
             var numberLengths = new int[_valueIndex];
             var expLengths = new int[_valueIndex];
             var averageNumberLength = 0;
             var averageExpLength = 0;
-            //  var memStream = new MemoryStream();
-
-            //  var countArr = BitConverter.GetBytes(_valueIndex);
-            //  memStream.Write(countArr, 0, countArr.Length);
 
             #region Metadata analysis
             for (var i = 0; i < _valueIndex; i++)
@@ -76,8 +64,6 @@ namespace Ofc.Algorithm.Zetty
                     {
                         var expLen = _values[i].Length - (j + 1);
                         expLengths[i] = expLen;
-                        //if (expLen < minExpLength)
-                        //    minExpLength = expLen;
 
                         numberLengths[i] = j;
                         currentLength = j;
@@ -90,46 +76,13 @@ namespace Ofc.Algorithm.Zetty
                 if (currentLength > maxNumberLength)
                     maxNumberLength = currentLength;
 
-                //if (currentLength < minNumberLength)
-                //    minNumberLength = currentLength;
             }
             averageNumberLength /= _valueIndex;
             averageExpLength /= _valueIndex;
             #endregion
 
 
-
-
-            //  var data = memStream.ToArray();
-
-            //foreach (var b in data)
-            //{
-            //    if (b < 10)
-            //        VORKOMMEN[b]++;
-            //}
-
-            //var dict = new Dictionary<int, int>();
-            //for (var i = 0; i < VORKOMMEN.Length; i++)
-            //{
-            //    while (dict.ContainsKey(VORKOMMEN[i]))
-            //    {
-            //        VORKOMMEN[i]++;
-            //    }
-            //    dict.Add(VORKOMMEN[i], i);
-            //}
-            //var huffmanCoding = new HuffmanCoding<int>(dict);
-            //var tree = huffmanCoding.CreateTree();
-            //var binRep = new Tuple<int, byte>[10];
-            //for (var i = 0; i < 10; i++)
-            //{
-            //    binRep[i] = tree.GetLeafNode(i).GetBooleanEncoding().GetBinaryPresentation();
-            //}
-
-
-            //   memStream.Close();
             _bitWriter.Write((ulong)_valueIndex, 32); // block size
-            //_bitWriter.WriteByte((byte)minNumberLength, 8);
-            //_bitWriter.WriteByte((byte)minExpLength, 8);
             _bitWriter.WriteByte((byte)averageNumberLength, 8);
             _bitWriter.WriteByte((byte)averageExpLength, 8);
 
@@ -176,63 +129,7 @@ namespace Ofc.Algorithm.Zetty
                 }
             }
 
-            //_bitWriter.Stream.Write(data, 0, data.Length);
-
-            //  Console.WriteLine("MASK IS " + (_bitWriter.Stream.Position - pos) + " BYTE LONG");
-
-            //   CompressData(data);
             _valueIndex = 0;
-        }
-
-        private void CompressData(byte[] data)
-        {
-            for (var i = 0; i < data.Length; i++)
-            {
-                data[i] -= 48;
-            }
-
-            for (var i = 0; i < data.Length; i++)
-            {
-                if (i + 2 < data.Length && data[i + 1] == data[i] && data[i] == data[i + 2])
-                {
-                    var length = 3;
-                    for (var j = i + 3; j < data.Length && length < 34; j++) // 34 -> 31 (5b) + 3 std offset
-                    {
-                        if (data[j] == data[i])
-                        {
-                            length++;
-                            continue;
-                        }
-                        break;
-                    }
-
-                    var encLength = length - 3;
-                    var encLengthNb = Utility.GetNeededBits(encLength);
-                    _bitWriter.WriteByte((byte)(10 + encLengthNb), 4);
-                    _bitWriter.WriteByte((byte)length, encLengthNb);
-                    _bitWriter.WriteByte(data[i], 4);
-
-                    //   Console.WriteLine((char)(data[i] + 48) + " x " + length);
-
-                    /*
-                     * NOTES:
-Compression is good (suppesedly to 7KB), but the encoding sucks (size x2)
-idea: get min number length. for each digit after that length, add 1 bit that says if theres a next digit -> no :
-                     * */
-                    i += length - 1;
-                }
-                else
-                {
-                    // Console.WriteLine((char)(data[i] + 48));
-                    // if (data[i] < 10)
-                    _bitWriter.WriteByte(data[i], 4);
-                    // else
-                    {
-                        // Console.WriteLine("INVALID SYMBOL: " + ((char)data[i] + 48));
-                        //_bitWriter.WriteByte((byte)(data[i] + 48), 8);
-                    }
-                }
-            }
         }
 
         public void Flush()

@@ -96,7 +96,7 @@ namespace Ofc.Algorithm.Zetty
             {
                 _output.Report(new string(numbers[i]));
             }
-            return true;//(int) blockLength == _maxBlockSize;
+            return true;
         }
     }
 }
