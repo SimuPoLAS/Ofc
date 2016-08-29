@@ -12,10 +12,10 @@ namespace Ofc.Algorithm.RoundingDigits
     public class RoundingDigitsReporter : IReporter<string>
     {
         private readonly int _decimalDigits;
-        private readonly IReporter<OfcNumber> _nextReporter;
+        private readonly IReporter<string> _nextReporter;
         public IConfiguaration Configuaration { get; }
 
-        public RoundingDigitsReporter(int decimalDigits, IReporter<OfcNumber> nextReporter)
+        public RoundingDigitsReporter(int decimalDigits, IReporter<string> nextReporter)
         {
             _decimalDigits = decimalDigits;
             _nextReporter = nextReporter;
@@ -102,7 +102,7 @@ namespace Ofc.Algorithm.RoundingDigits
 
         public void Report(string value)
         {
-            _nextReporter.Report(OfcNumber.Parse(RoundNumber(value, _decimalDigits)));
+            _nextReporter.Report(RoundNumber(value, _decimalDigits));
         }
 
         public void Report(string[] values, int offset, int amount)

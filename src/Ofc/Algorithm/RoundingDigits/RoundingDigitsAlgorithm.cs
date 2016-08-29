@@ -6,14 +6,19 @@ namespace Ofc.Algorithm.RoundingDigits
     using System.IO;
     using Ofc.Core;
 
-    public class RoundingDigitsAlgorithm : IAlgorithm<string>
+    public class RoundingDigitsAlgorithm<T> : IAlgorithm<string>
     {
-        private readonly IAlgorithm<OfcNumber> _next;
+        private readonly IAlgorithm<string> _next;
         public string Id => "RND2";
         public string Name => "Rounding Digits";
         public Version Version => new Version(1, 0, 0, 0);
 
-        public RoundingDigitsAlgorithm(IAlgorithm<OfcNumber> next)
+        public RoundingDigitsAlgorithm(StringSourceAlgorithm<T> next)
+        {
+            _next = next;
+        }
+
+        public RoundingDigitsAlgorithm(IAlgorithm<string> next)
         {
             _next = next;
         }
@@ -31,7 +36,7 @@ namespace Ofc.Algorithm.RoundingDigits
 
         public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<string> reporter, int width)
         {
-            _next.Decompress(target, configuaration, input, new OfcConvertingReporter(reporter), width);
+            _next.Decompress(target, configuaration, input, reporter, width);
         }
     }
 }
