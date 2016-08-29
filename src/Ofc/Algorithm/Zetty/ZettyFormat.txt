@@ -1,0 +1,10 @@
+﻿Example:
+123e5
+122e5
+120e5
+
+
+"Compressed":
+1112222320555
+It will also store data such as the exponent offset, number length etc to restore the old format.
+The transformed string will be easier to compress for algorithms like 7z's LZMA

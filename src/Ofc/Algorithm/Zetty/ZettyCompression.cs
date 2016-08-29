@@ -42,19 +42,21 @@ namespace Ofc.Algorithm.Zetty
             if (_valueIndex != 0)
                 FinishBlock();
 
-            //     _bitWriter.Write(0, 32);
-            //   _bitWriter.Flush();
+            _bitWriter.Write(0, 32);
+            _bitWriter.Flush();
         }
 
         private void FinishBlock()
         {
             var maxNumberLength = 1;
-            var minNumberLength = int.MaxValue;
-            var minExpLength = int.MaxValue;
+            //var minNumberLength = int.MaxValue;
+            //var minExpLength = int.MaxValue;
             var maxTotalLength = 1;
             var numberLengths = new int[_valueIndex];
             var expLengths = new int[_valueIndex];
-            var memStream = new MemoryStream();
+            var averageNumberLength = 0;
+            var averageExpLength = 0;
+            //  var memStream = new MemoryStream();
 
             //  var countArr = BitConverter.GetBytes(_valueIndex);
             //  memStream.Write(countArr, 0, countArr.Length);
@@ -74,50 +76,31 @@ namespace Ofc.Algorithm.Zetty
                     {
                         var expLen = _values[i].Length - (j + 1);
                         expLengths[i] = expLen;
-                        if (expLen < minExpLength)
-                            minExpLength = expLen;
+                        //if (expLen < minExpLength)
+                        //    minExpLength = expLen;
 
                         numberLengths[i] = j;
                         currentLength = j;
                         break;
                     }
                 }
+                averageNumberLength += numberLengths[i];
+                averageExpLength += expLengths[i];
 
                 if (currentLength > maxNumberLength)
                     maxNumberLength = currentLength;
 
-                if (currentLength < minNumberLength)
-                    minNumberLength = currentLength;
+                //if (currentLength < minNumberLength)
+                //    minNumberLength = currentLength;
             }
+            averageNumberLength /= _valueIndex;
+            averageExpLength /= _valueIndex;
             #endregion
 
-            for (var i = 0; i < maxNumberLength; i++)
-            {
-                for (var j = 0; j < _valueIndex; j++)
-                {
-                    var str = _values[j];
-                    if (numberLengths[j] > i)
-                        memStream.WriteByte((byte)(str[i]/* - 48*/));
-                }
-            }
-
-            var changed = true;
-            for (var offset = 0; changed; offset++)
-            {
-                changed = false;
-                for (var i = 0; i < _valueIndex; i++)
-                {
-                    var index = numberLengths[i] + 1 + offset;
-                    if (_values[i].Length > index)
-                    {
-                        memStream.WriteByte((byte)(_values[i][index]/* - 48*/));
-                        changed = true;
-                    }
-                }
-            }
 
 
-            var data = memStream.ToArray();
+
+            //  var data = memStream.ToArray();
 
             //foreach (var b in data)
             //{
@@ -143,34 +126,61 @@ namespace Ofc.Algorithm.Zetty
             //}
 
 
-            memStream.Close();
-            _bitWriter.Write((ulong)_valueIndex, 32);
-            _bitWriter.WriteByte((byte)minNumberLength, 8);
-            _bitWriter.WriteByte((byte)minExpLength, 8);
+            //   memStream.Close();
+            _bitWriter.Write((ulong)_valueIndex, 32); // block size
+            //_bitWriter.WriteByte((byte)minNumberLength, 8);
+            //_bitWriter.WriteByte((byte)minExpLength, 8);
+            _bitWriter.WriteByte((byte)averageNumberLength, 8);
+            _bitWriter.WriteByte((byte)averageExpLength, 8);
 
-            var avg = (int)numberLengths.Average();
 
             for (var i = 0; i < _valueIndex; i++)
             {
-                var diff = numberLengths[i] - avg;
+                var diff = numberLengths[i] - averageNumberLength;
                 _bitWriter.WriteByte((byte)(diff < 0 ? 1 : 0), 1);
-                _bitWriter.Write((ulong)(1 << Math.Abs(diff)), (byte)(Math.Abs(diff) + 1)); // Writing NUM ending masks 001 -> ending in 3 chars
+                _bitWriter.Write((ulong)(1 << Math.Abs(diff)), (byte)(Math.Abs(diff) + 1)); // Writing NUM ending masks 001 -> ending in 4 chars
             }
 
 
-            var avgExp = (int)expLengths.Average();
             for (var i = 0; i < _valueIndex; i++)
             {
-                var diff = expLengths[i] - avgExp;
+                var diff = expLengths[i] - averageExpLength;
                 _bitWriter.WriteByte((byte)(diff < 0 ? 1 : 0), 1);
-                _bitWriter.Write((ulong)(1 << Math.Abs(diff)), (byte)(Math.Abs(diff) + 1)); // Writing NUM ending masks 001 -> ending in 3 chars
+                _bitWriter.Write((ulong)(1 << Math.Abs(diff)), (byte)(Math.Abs(diff) + 1)); // Writing NUM ending masks 001 -> ending in 4 chars
             }
 
-            _bitWriter.Stream.Write(data, 0, data.Length);
+            _bitWriter.Flush();
+
+            for (var i = 0; i < maxNumberLength; i++) // writing numbers in 111000 notation
+            {
+                for (var j = 0; j < _valueIndex; j++)
+                {
+                    var str = _values[j];
+                    if (numberLengths[j] > i)
+                        _bitWriter.Stream.WriteByte((byte)(str[i]/* - 48*/));
+                }
+            }
+
+            var changed = true;
+            for (var offset = 0; changed; offset++) // writing exponents in 111000 notation
+            {
+                changed = false;
+                for (var i = 0; i < _valueIndex; i++)
+                {
+                    var index = numberLengths[i] + 1 + offset;
+                    if (_values[i].Length > index)
+                    {
+                        _bitWriter.Stream.WriteByte((byte)(_values[i][index]/* - 48*/));
+                        changed = true;
+                    }
+                }
+            }
+
+            //_bitWriter.Stream.Write(data, 0, data.Length);
 
             //  Console.WriteLine("MASK IS " + (_bitWriter.Stream.Position - pos) + " BYTE LONG");
 
-         //   CompressData(data);
+            //   CompressData(data);
             _valueIndex = 0;
         }
 
@@ -202,7 +212,7 @@ namespace Ofc.Algorithm.Zetty
                     _bitWriter.WriteByte((byte)length, encLengthNb);
                     _bitWriter.WriteByte(data[i], 4);
 
-                 //   Console.WriteLine((char)(data[i] + 48) + " x " + length);
+                    //   Console.WriteLine((char)(data[i] + 48) + " x " + length);
 
                     /*
                      * NOTES:
@@ -213,12 +223,12 @@ idea: get min number length. for each digit after that length, add 1 bit that sa
                 }
                 else
                 {
-                   // Console.WriteLine((char)(data[i] + 48));
-                   // if (data[i] < 10)
-                        _bitWriter.WriteByte(data[i], 4);
-                   // else
+                    // Console.WriteLine((char)(data[i] + 48));
+                    // if (data[i] < 10)
+                    _bitWriter.WriteByte(data[i], 4);
+                    // else
                     {
-                       // Console.WriteLine("INVALID SYMBOL: " + ((char)data[i] + 48));
+                        // Console.WriteLine("INVALID SYMBOL: " + ((char)data[i] + 48));
                         //_bitWriter.WriteByte((byte)(data[i] + 48), 8);
                     }
                 }

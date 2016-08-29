@@ -11,76 +11,91 @@ namespace Ofc.Algorithm.Zetty
     public class ZettyDecompression
     {
         private readonly IReporter<string> _output;
-        private readonly int _maxBlockSize;
         private readonly StreamBitReader _streamBitReader;
+        private readonly Stream _stream;
 
-        public ZettyDecompression(Stream input, IReporter<string> output, int maxBlockSize = 102400)
+        public ZettyDecompression(Stream input, IReporter<string> output)
         {
             _output = output;
-            _maxBlockSize = maxBlockSize;
+            _stream = input;
             _streamBitReader = new StreamBitReader(input);
         }
 
         public bool DecompressNext()
         {
             var blockLength = (int)_streamBitReader.Read(32);
-            if (blockLength == 0) return false;
-            var numberSize = _streamBitReader.ReadByte(8);
-            var expSize = _streamBitReader.ReadByte(8);
+            if (blockLength == 0) return false; // The compression will write 0 as int32 at the end - a block with 0 length = the end
             var numbers = new char[blockLength][];
-            for (var i = 0; i < numbers.Length; i++)
-            {
-                numbers[i] = new char[numberSize + 1 + expSize];
-            }
+            var numberLengths = new int[blockLength];
+            var expLengths = new int[blockLength];
+            var averageNumberLength = _streamBitReader.ReadByte(8);
+            var averageExpLength = _streamBitReader.ReadByte(8);
 
-            var memStream = new MemoryStream(); 
-
-            for (var i = 0; i < numberSize; i++) //Stream pos needs to be 6 here
-            {
-                for (var j = 0; j < blockLength; j++)
-                {
-                    var token = _streamBitReader.ReadByte(4);
-                    if (token > 10)
-                    {
-                        var nbBlockSize = token - 10;
-                        var blockSize = _streamBitReader.ReadByte((byte)nbBlockSize);
-                        var symbol = _streamBitReader.ReadByte(4);
-                        for (var k = 0; k < blockSize; k++)
-                        {
-                            memStream.WriteByte((byte)(symbol + 48));
-                        }
-                    }
-                    else
-                    {
-                        memStream.WriteByte((byte)(token + 48));
-                    }
-                }
-            }
-            memStream.Position = 0;
-            for (var i = 0; i < numberSize; i++)
-            {
-                for (var j = 0; j < blockLength; j++)
-                {
-                    var chr = (char)memStream.ReadByte();
-                    if(chr == ':') continue;
-                    numbers[j][i] = chr;
-                }
-            }
+            #region Reconstructing value lengths from bit mask and initializing numbers array
             for (var i = 0; i < blockLength; i++)
             {
-                numbers[i][numberSize] = 'e';
+                var isSmallerThanAvg = _streamBitReader.ReadByte(1) * -2 + 1; // * -2 + 1 transforms a 0 - 1 isNegative bool into a -1 or 1 multiplier ;)
+                var diff = 0;
+                while (_streamBitReader.ReadByte(1) == 0) diff++;
+                numberLengths[i] = averageNumberLength + diff * isSmallerThanAvg;
             }
-            for (var i = 0; i < numberSize; i++)
+
+            for (var i = 0; i < blockLength; i++)
             {
-                for (var j = numberSize + 1; j < numberSize + 1 + expSize; j++)
+                var isSmallerThanAvg = _streamBitReader.ReadByte(1) * -2 + 1; // * -2 + 1 transforms a 0 - 1 isNegative bool into a -1 or 1 multiplier ;)
+                var diff = 0;
+                while (_streamBitReader.ReadByte(1) == 0) diff++;
+                expLengths[i] = averageExpLength + diff * isSmallerThanAvg;
+
+                var thisNumLength = numberLengths[i];
+                if (expLengths[i] > 0)
+                    thisNumLength += expLengths[i] + 1;
+                numbers[i] = new char[thisNumLength];
+            }
+            #endregion
+
+
+            var changed = true;
+            for (var digitIndex = 0; changed; digitIndex++)
+            {
+                changed = false;
+                for (var i = 0; i < blockLength; i++)
                 {
-                    var chr = (char)memStream.ReadByte();
-                    if (chr == ':') continue;
-                    numbers[j][i] = chr;
+                    if (numberLengths[i] > digitIndex)
+                    {
+                        changed = true;
+                        numbers[i][digitIndex] = (char)_stream.ReadByte();
+                    }
+                }
+            }
+
+            for (var i = 0; i < blockLength; i++)
+            {
+                if (expLengths[i] > 0)
+                {
+                    numbers[i][numberLengths[i]] = 'e';
                 }
             }
 
 
+            changed = true;
+            for (var digitIndex = 0; changed; digitIndex++)
+            {
+                changed = false;
+                for (var i = 0; i < blockLength; i++)
+                {
+                    if (expLengths[i] > digitIndex)
+                    {
+                        changed = true;
+                        numbers[i][numberLengths[i] + 1 + digitIndex] = (char)_stream.ReadByte();
+                    }
+                }
+            }
+
+            for (var i = 0; i < numbers.Length; i++)
+            {
+                _output.Report(new string(numbers[i]));
+            }
             return true;//(int) blockLength == _maxBlockSize;
         }
     }

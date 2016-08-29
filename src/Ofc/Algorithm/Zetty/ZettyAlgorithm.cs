@@ -30,7 +30,8 @@
 
         public void Decompress(IFile target, IConfiguaration configuaration, Stream input, IReporter<string> reporter, int width)
         {
-            throw new NotImplementedException();
+            var decomp = new ZettyDecompression(input, reporter);
+            while (decomp.DecompressNext()) { }
         }
     }
 }
