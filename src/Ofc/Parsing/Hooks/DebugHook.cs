@@ -60,7 +60,7 @@
 
         public void HandleListEntries(T[] values)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public void LeaveList()

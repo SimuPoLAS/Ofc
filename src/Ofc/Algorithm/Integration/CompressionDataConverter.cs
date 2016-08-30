@@ -21,7 +21,7 @@
 
         public OfcNumber Read([NotNull]Stream reader)
         {
-            throw new NotImplementedException(); // todo needs a rewrite
+            throw new NotImplementedException();
         }
 
         public OfcNumber FromString(string value)

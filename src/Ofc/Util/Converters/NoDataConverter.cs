@@ -18,7 +18,7 @@
         /// <param name="value">The value which will be written into the stream.</param>
         public void Write(Stream output, string value)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -28,7 +28,7 @@
         /// <returns>The read value.</returns>
         public string Read(Stream input)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>

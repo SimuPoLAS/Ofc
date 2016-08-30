@@ -29,7 +29,7 @@
 
         public double Read(Stream input)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public double FromString(string target)
