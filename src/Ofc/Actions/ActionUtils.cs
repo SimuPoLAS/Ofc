@@ -3,6 +3,7 @@
     using System;
     using System.IO;
     using Core;
+    using JetBrains.Annotations;
 
     internal static class ActionUtils
     {
@@ -35,6 +36,7 @@
         {
             baseInputDirectory = Path.GetFullPath(baseInputDirectory);
             baseOutputDirectory = Path.GetFullPath(baseOutputDirectory);
+            if (!Directory.Exists(baseInputDirectory)) throw new DirectoryNotFoundException($"Could not find the directory: '{baseInputDirectory}'");
             foreach (var file in Directory.EnumerateFiles(baseInputDirectory, "*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
                 var relativePath = file.StartsWith(baseInputDirectory) ? file.Substring(baseInputDirectory.Length) : file;
@@ -44,15 +46,17 @@
             }
         }
 
+        [UsedImplicitly]
         internal static void AddCompressFileAction<TAlgorithm>(this OfcActionManager manager, IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, IConfiguaration config, string source, string destination)
         {
             manager.Enqueue(new CompressAction<TAlgorithm>(algorithm, converter, config, null, source, destination + DataFileExtention, destination + MetaFileExtention, destination + UncompressedFileExtention));
         }
 
-        internal static void AddDecompressDirectoryAction<TAlgorithm>(this OfcActionManager manager, IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, string baseInputDirectory, string baseOutputDirectory, bool recursive)
+        internal static void AddDecompressDirectoryAction<TAlgorithm>(this OfcActionManager manager, IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, IConfiguaration configuaration, string baseInputDirectory, string baseOutputDirectory, bool recursive)
         {
             baseInputDirectory = Path.GetFullPath(baseInputDirectory);
             baseOutputDirectory = Path.GetFullPath(baseOutputDirectory);
+            if (!Directory.Exists(baseInputDirectory)) throw new DirectoryNotFoundException($"Could not find the directory: '{baseInputDirectory}'");
             foreach (var file in Directory.EnumerateFiles(baseInputDirectory, "*", recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
             {
                 var relativePath = file.StartsWith(baseInputDirectory) ? file.Substring(baseInputDirectory.Length) : file;
@@ -68,18 +72,13 @@
 
                 var compressed = extention == MetaFileExtention;
                 var outputPath = Path.Combine(baseOutputDirectory, Path.ChangeExtension(relativePath, null));
-                if (compressed)
-                {
-                    var dataPath = Path.ChangeExtension(file, DataFileExtention);
-                    manager.Enqueue(new DecompressAction<TAlgorithm>(algorithm, converter, baseInputDirectory, file, File.Exists(dataPath) ? dataPath : null, false, outputPath));
-                }
-                else manager.Enqueue(new DecompressAction<TAlgorithm>(algorithm, converter, baseInputDirectory, file, null, true, outputPath));
+                manager.Enqueue(compressed ? new DecompressAction<TAlgorithm>(algorithm, converter, configuaration, baseInputDirectory, file, Path.ChangeExtension(file, DataFileExtention), false, outputPath) : new DecompressAction<TAlgorithm>(algorithm, converter, configuaration, baseInputDirectory, file, null, true, outputPath));
             }
         }
 
-        internal static void AddDecompressFileAction<TAlgorithm>(this OfcActionManager manager, IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, string metaSource, string dataSource, string destination)
+        internal static void AddDecompressFileAction<TAlgorithm>(this OfcActionManager manager, IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, IConfiguaration configuaration, string metaSource, string dataSource, string destination)
         {
-            manager.Enqueue(new DecompressAction<TAlgorithm>(algorithm, converter, null, metaSource, dataSource, Path.GetExtension(metaSource) == UncompressedFileExtention, destination));
+            manager.Enqueue(new DecompressAction<TAlgorithm>(algorithm, converter, configuaration, null, metaSource, dataSource, Path.GetExtension(metaSource) == UncompressedFileExtention, destination));
         }
     }
 }

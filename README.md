@@ -16,12 +16,14 @@ A command line tool for compressing Open Foam (r) files.
 Usage:
   ofc.exe [-h|--help]
   ofc.exe [--version]
-  ofc.exe compress directory <input> <output> [-f] [-r] [-p] [-s] [--rounding=<digits>]
-  ofc.exe compress file <input> <output> [-f] [-s] [--rounding=<digits>]
-  ofc.exe decompress directory <input> <output> [-f] [-r] [-p]
-  ofc.exe decompress file <input> <output> [data] [-f]
+  ofc.exe algorithms list
+  ofc.exe compress directory <input> <output> [-f] [-r] [-p] [-s] [--algorithm=<name>] [--rounding=<digits>]
+  ofc.exe compress file <input> <output> [-f] [-s] [--algorithm=<name>] [--rounding=<digits>]
+  ofc.exe decompress directory <input> <output> [-f] [-r] [-p] [--algorithm=<name>]
+  ofc.exe decompress file <input> <output> [data] [-f] [--algorithm=<name>]
 
 Methods:
+  algorithms list       Lists all available algorithms for compression/decompression.
   compress directory    Compress the specified directory.
   compress file         Compress the specified file.
   decompress directory  Decompress the specified compressed directory.
@@ -41,6 +43,31 @@ Options:
 
 # Usage
 This section describes the general usage of the tool and the parameters shown in the [#usage section](#usage), but in more detail. When providing paths always provide __absolute__ paths and remember to put them in _double-quotes_  `"` if they contain _spaces_.
+
+## Listing algorithms
+> __Syntax__: `ofc.exe algorithms list` 
+
+-----
+
+Lists all available algorithms which can be used for compression or decompression. The default algorithm used when no algorithm is specified is marked with an asterisk `*`. Example output which has the algorithms `blocky` and `zetty` available, while `zetty` is the default algorithm used:
+
+```
+   blocky
+ * zetty
+```
+
+## Using algorithms
+> __Syntax__: `--algorithm=<name>`
+
+-----
+
+In order to use a specific algorithm when compressing/decompressing specify the option `algorithm` and supply the name of the algorithm which should be used. If you are not sure what algorithms are available use `algorithms list` as described [here](#Listing-algorithms).
+
+-----
+
+Example of a file compression using the algorithm `zetty` for more information on how to use the `compression`/`decompression` commands, see the chapters below:
+
+`ofc.exe compress file /usr/data /usr/out -f --algorithm=zetty` 
 
 ## Compressing files
 > __Syntax__: `ofc.exe compress file <input> <output> [-f] [-s] [--rounding=<digits>]` 

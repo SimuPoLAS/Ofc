@@ -4,6 +4,7 @@
     using System.IO;
     using Core;
     using IO;
+    using JetBrains.Annotations;
     using LZMA.Helper;
 
     // todo instead of detecting the algorithm used it must be supplied
@@ -27,6 +28,7 @@
 
         private readonly IAlgorithm<TAlgorithm> _algorithm;
         private readonly IConverter<TAlgorithm> _converter;
+        private readonly IConfiguaration _configuaration;
         private readonly string _metaPath;
         private readonly string _dataPath;
         private readonly bool _isLzma;
@@ -39,12 +41,16 @@
         private OfcActionResult _result = OfcActionResult.Done;
 
 
-        public DecompressAction(IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, string basePath, string metaPath, string dataPath, bool isLzma, string destination)
+        public DecompressAction(IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, IConfiguaration configuaration, [CanBeNull] string basePath, [NotNull] string metaPath, [CanBeNull] string dataPath, bool isLzma, [NotNull] string destination)
         {
+            if (metaPath == null) throw new ArgumentNullException(nameof(metaPath));
+            if (dataPath == null && !isLzma) throw new ArgumentNullException(nameof(dataPath));
+            if (destination == null) throw new ArgumentNullException(nameof(destination));
             _metaPath = System.IO.Path.GetFullPath(metaPath);
-            _dataPath = System.IO.Path.GetFullPath(dataPath);
+            _dataPath = isLzma ? null : System.IO.Path.GetFullPath(dataPath);
             _algorithm = algorithm;
             _converter = converter;
+            _configuaration = configuaration;
             _isLzma = isLzma;
             _destination = System.IO.Path.GetFullPath(destination);
             _relativePath = basePath != null && _metaPath.StartsWith(basePath) ? _metaPath.Substring(basePath.Length) : _metaPath;

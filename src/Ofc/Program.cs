@@ -13,16 +13,16 @@ namespace Ofc
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using Actions;
     using Algorithm.Blocky.Integration;
-    using Algorithm.Zetty;
     using CLI;
     using CLI.Validators;
     using Core;
     using Core.Configurations;
     using JetBrains.Annotations;
-    using Util.Converters;
+    using Util;
 
     /// <summary>
     ///   Contains the main entrypoint for the application and the all the CLI functionality.
@@ -117,11 +117,13 @@ namespace Ofc
                 argumentParser.NewLayer(CommandLineLayers.Help).AddOption(e => e.SetShortName('h').SetLongName("help").Description("Display this help message."));
                 argumentParser.NewLayer(CommandLineLayers.Version).AddOption(e => e.SetLongName("version").Description("Display the current version of the tool."));
 
-                argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compress the specified directory.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<int>()).Option('f').Option('r').Option('p').Option('s');
-                argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compress the specified file.").Argument("input").Argument("output").Option("rounding", e => e.SetName("digits").Type<int>()).Option('f').Option('s');
+                argumentParser.NewLayer(CommandLineLayers.ListAlgorithms).Command("algorithms").Command("list", "Lists all available algorithms for compression/decompression.");
 
-                argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompress the specified compressed directory.").Argument("input").Argument("output").Option('f').Option('r').Option('p');
-                argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompress the specified compressed file or directory.").Argument("input").Argument("output").Argument("data", true).Option('f');
+                argumentParser.NewLayer(CommandLineLayers.CompressDirectory).Command("compress").Command("directory", "Compress the specified directory.").Argument("input").Argument("output").Option("algorithm", e => e.SetName("name")).Option("rounding", e => e.SetName("digits").Type<int>()).Option('f').Option('r').Option('p').Option('s');
+                argumentParser.NewLayer(CommandLineLayers.CompressFile).Command("compress").Command("file", "Compress the specified file.").Argument("input").Argument("output").Option("algorithm", e => e.SetName("name")).Option("rounding", e => e.SetName("digits").Type<int>()).Option('f').Option('s');
+
+                argumentParser.NewLayer(CommandLineLayers.DecompressDirectory).Command("decompress").Command("directory", "Decompress the specified compressed directory.").Argument("input").Argument("output").Option("algorithm", e => e.SetName("name")).Option('f').Option('r').Option('p');
+                argumentParser.NewLayer(CommandLineLayers.DecompressFile).Command("decompress").Command("file", "Decompress the specified compressed file or directory.").Argument("input").Argument("output").Option("algorithm", e => e.SetName("name")).Argument("data", true).Option('f');
 
                 argumentParser.NewOption().SetLongName("rounding").Description("Enable rounding to the specified amount of digits.");
                 argumentParser.NewOption().SetShortName('f').Description("Force overriding of files.");
@@ -147,9 +149,20 @@ namespace Ofc
                         config["roundingDecimals"] = result.GetOption<int>("rounding");
                     }
                     if (result.GetFlag("s"))
-                    {
                         config["simplealists"] = true;
-                        Console.WriteLine("Simple ano lists :D");
+
+                    // check is algorithm is supplied
+                    string algorithm = null;
+                    if (result.GetFlag("algorithm"))
+                    {
+                        var supposedAlgorithm = result.GetOption("algorithm") as string;
+                        if (supposedAlgorithm == null || !AlgorithmHelper.IsValidAlgorithm(supposedAlgorithm))
+                        {
+                            Console.WriteLine("Invalid algorithm.\n");
+                            Console.Write(argumentParser.GenerateHelp());
+                            return;
+                        }
+                        algorithm = supposedAlgorithm;
                     }
 
                     switch (result.LayerId)
@@ -165,13 +178,13 @@ namespace Ofc
 
                         // Compresses the specified file
                         case CommandLineLayers.CompressFile:
-                            manager.AddCompressFileAction(new ZettyAlgorithm(config), NoDataConverter.Instance, config, result[0], result[1]);
+                            manager.AddCompressFileActionWithAlgorithm(algorithm, config, result[0], result[1]);
                             manager.Override = result['f'];
                             manager.Handle();
                             break;
                         // Compresses the specified directory
                         case CommandLineLayers.CompressDirectory:
-                            manager.AddCompressDirectoryAction(new ZettyAlgorithm(config), NoDataConverter.Instance, config, result[0], result[1], result['r']);
+                            manager.AddCompressDirectoryActionWithAlgorithm(algorithm, config, result[0], result[1], result['r']);
                             if (manager.Empty) Console.WriteLine(" WARNING: input folder is empty");
                             manager.Override = result['f'];
                             manager.Parallel = result['p'];
@@ -180,16 +193,24 @@ namespace Ofc
 
                         // Decompresses the specified file
                         case CommandLineLayers.DecompressFile:
-                            manager.AddDecompressFileAction(new ZettyAlgorithm(config), NoDataConverter.Instance, result[0], result[2] ?? Path.ChangeExtension(result[0], ActionUtils.DataFileExtention), result[1]);
+                            manager.AddDecompressFileActionWithAlgorithm(algorithm, config, result[0], result[2] ?? Path.ChangeExtension(result[0], ActionUtils.DataFileExtention), result[1]);
                             manager.Handle();
                             break;
                         // Decompresses the specified directory
                         case CommandLineLayers.DecompressDirectory:
-                            manager.AddDecompressDirectoryAction(new ZettyAlgorithm(config), NoDataConverter.Instance, result[0], result[1], result['r']);
+                            manager.AddDecompressDirectoryActionWithAlgorithm(algorithm, config, result[0], result[1], result['r']);
                             if (manager.Empty) Console.WriteLine(" WARNING: input folder is empty");
                             manager.Override = result['f'];
                             manager.Parallel = result['p'];
                             manager.Handle();
+                            break;
+
+                        // List all available algorithms
+                        case CommandLineLayers.ListAlgorithms:
+                            var defaultAlgorithm = AlgorithmHelper.DefaultAlgorithm;
+                            foreach (var name in AlgorithmHelper.RegisteredAlgorithmByName.OrderBy(e => e))
+                                Console.WriteLine($" {(defaultAlgorithm == name ? "*" : " ")} {name}");
+                            Console.WriteLine();
                             break;
                     }
                 }
@@ -216,7 +237,8 @@ namespace Ofc
             CompressFile,
             CompressDirectory,
             DecompressFile,
-            DecompressDirectory
+            DecompressDirectory,
+            ListAlgorithms
         }
     }
 }
