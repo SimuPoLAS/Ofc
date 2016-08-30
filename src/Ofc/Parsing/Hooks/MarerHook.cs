@@ -48,11 +48,12 @@
 
     internal class MarerHook<T> : MarerHook
     {
-        private IAlgorithm<T> _algorithm;
-        private IConverter<T> _converter;
+        private readonly IAlgorithm<T> _algorithm;
+        private readonly IConverter<T> _converter;
+        private readonly Stream _output;
+        private readonly IConfiguaration _configuaration;
+
         private IReporter<T> _reporter;
-        private Stream _output;
-        private IConfiguaration _configuaration;
 
         private bool _inList;
         private uint _start;

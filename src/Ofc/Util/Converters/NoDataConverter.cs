@@ -6,6 +6,11 @@
 
     internal class NoDataConverter : IConverter<string>
     {
+        private static NoDataConverter _instance;
+
+        internal static NoDataConverter Instance => _instance ?? (_instance = new NoDataConverter());
+
+
         /// <summary>
         ///     Writes the specified value into the specified stream.
         /// </summary>

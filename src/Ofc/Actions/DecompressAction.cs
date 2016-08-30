@@ -1,19 +1,14 @@
-﻿using Ofc.Algorithm.Zetty;
-using Ofc.Core.Configurations;
-using Ofc.Util.Converters;
-
-namespace Ofc.Actions
+﻿namespace Ofc.Actions
 {
     using System;
     using System.IO;
-    using System.Text;
-    using Ofc.Algorithm.Blocky.Integration;
-    using Ofc.Algorithm.Integration;
-    using Ofc.CLI;
-    using Ofc.IO;
-    using Ofc.LZMA.Helper;
+    using Core;
+    using IO;
+    using LZMA.Helper;
 
-    internal class DecompressAction : IOfcAction // todo
+    // todo instead of detecting the algorithm used it must be supplied
+
+    internal class DecompressAction<TAlgorithm> : IOfcAction
     {
         public string Code => "DCOM";
 
@@ -30,11 +25,13 @@ namespace Ofc.Actions
         public bool Force { get; set; }
 
 
-        private string _metaPath;
-        private string _dataPath;
-        private bool _isLzma;
-        private string _destination;
-        private string _relativePath;
+        private readonly IAlgorithm<TAlgorithm> _algorithm;
+        private readonly IConverter<TAlgorithm> _converter;
+        private readonly string _metaPath;
+        private readonly string _dataPath;
+        private readonly bool _isLzma;
+        private readonly string _destination;
+        private readonly string _relativePath;
 
         private bool _hasData;
 
@@ -42,10 +39,12 @@ namespace Ofc.Actions
         private OfcActionResult _result = OfcActionResult.Done;
 
 
-        public DecompressAction(string basePath, string metaPath, string dataPath, bool isLzma, string destination)
+        public DecompressAction(IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, string basePath, string metaPath, string dataPath, bool isLzma, string destination)
         {
             _metaPath = System.IO.Path.GetFullPath(metaPath);
             _dataPath = System.IO.Path.GetFullPath(dataPath);
+            _algorithm = algorithm;
+            _converter = converter;
             _isLzma = isLzma;
             _destination = System.IO.Path.GetFullPath(destination);
             _relativePath = basePath != null && _metaPath.StartsWith(basePath) ? _metaPath.Substring(basePath.Length) : _metaPath;
@@ -116,8 +115,6 @@ namespace Ofc.Actions
                         using (var outputText = new StreamWriter(output))
                         {
                             Status = 111;
-                            var algorithm = new ZettyAlgorithm(EmptyConfiguration.Instance);
-                            var converter = new NoDataConverter();
 
                             Status = 112;
                             using (var meta = File.OpenText(_metaPath + ActionUtils.TempFileExtention))
@@ -129,7 +126,7 @@ namespace Ofc.Actions
                                     using (var data = File.OpenRead(_dataPath + ActionUtils.TempFileExtention))
                                     {
                                         Status = 115;
-                                        using (var reader = new MarerReader<string>(meta, outputText, algorithm, converter, data))
+                                        using (var reader = new MarerReader<TAlgorithm>(meta, outputText, _algorithm, _converter, data))
                                         {
                                             Status = 116;
                                             reader.Do();
@@ -142,7 +139,7 @@ namespace Ofc.Actions
                                 else
                                 {
                                     Status = 130;
-                                    using (var reader = new MarerReader<string>(meta, outputText, algorithm, converter, null))
+                                    using (var reader = new MarerReader<TAlgorithm>(meta, outputText, _algorithm, _converter, null))
                                     {
                                         Status = 131;
                                         reader.Do();

@@ -2,7 +2,7 @@
 {
     using System;
     using System.IO;
-    using Ofc.Core;
+    using Core;
 
     internal static class ActionUtils
     {
@@ -31,7 +31,7 @@
         }
 
 
-        internal static void AddCompressDirectoryAction(this OfcActionManager manager, string baseInputDirectory, string baseOutputDirectory, bool recursive, IConfiguaration config)
+        internal static void AddCompressDirectoryAction<TAlgorithm>(this OfcActionManager manager, IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, IConfiguaration config, string baseInputDirectory, string baseOutputDirectory, bool recursive)
         {
             baseInputDirectory = Path.GetFullPath(baseInputDirectory);
             baseOutputDirectory = Path.GetFullPath(baseOutputDirectory);
@@ -40,16 +40,16 @@
                 var relativePath = file.StartsWith(baseInputDirectory) ? file.Substring(baseInputDirectory.Length) : file;
                 if (relativePath.StartsWith("/") || relativePath.StartsWith("\\")) relativePath = relativePath.Substring(1);
                 var outputPath = Path.Combine(baseOutputDirectory, relativePath);
-                manager.Enqueue(new CompressAction(baseInputDirectory, file, outputPath + DataFileExtention, outputPath + MetaFileExtention, outputPath + UncompressedFileExtention, config));
+                manager.Enqueue(new CompressAction<TAlgorithm>(algorithm, converter, config, baseInputDirectory, file, outputPath + DataFileExtention, outputPath + MetaFileExtention, outputPath + UncompressedFileExtention));
             }
         }
 
-        internal static void AddCompressFileAction(this OfcActionManager manager, string source, string destination, IConfiguaration config)
+        internal static void AddCompressFileAction<TAlgorithm>(this OfcActionManager manager, IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, IConfiguaration config, string source, string destination)
         {
-            manager.Enqueue(new CompressAction(null, source, destination + DataFileExtention, destination + MetaFileExtention, destination + UncompressedFileExtention, config));
+            manager.Enqueue(new CompressAction<TAlgorithm>(algorithm, converter, config, null, source, destination + DataFileExtention, destination + MetaFileExtention, destination + UncompressedFileExtention));
         }
 
-        internal static void AddDecompressDirectoryAction(this OfcActionManager manager, string baseInputDirectory, string baseOutputDirectory, bool recursive)
+        internal static void AddDecompressDirectoryAction<TAlgorithm>(this OfcActionManager manager, IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, string baseInputDirectory, string baseOutputDirectory, bool recursive)
         {
             baseInputDirectory = Path.GetFullPath(baseInputDirectory);
             baseOutputDirectory = Path.GetFullPath(baseOutputDirectory);
@@ -71,15 +71,15 @@
                 if (compressed)
                 {
                     var dataPath = Path.ChangeExtension(file, DataFileExtention);
-                    manager.Enqueue(new DecompressAction(baseInputDirectory, file, File.Exists(dataPath) ? dataPath : null, false, outputPath));
+                    manager.Enqueue(new DecompressAction<TAlgorithm>(algorithm, converter, baseInputDirectory, file, File.Exists(dataPath) ? dataPath : null, false, outputPath));
                 }
-                else manager.Enqueue(new DecompressAction(baseInputDirectory, file, null, true, outputPath));
+                else manager.Enqueue(new DecompressAction<TAlgorithm>(algorithm, converter, baseInputDirectory, file, null, true, outputPath));
             }
         }
 
-        internal static void AddDecompressFileAction(this OfcActionManager manager, string metaSource, string dataSource, string destination)
+        internal static void AddDecompressFileAction<TAlgorithm>(this OfcActionManager manager, IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, string metaSource, string dataSource, string destination)
         {
-            manager.Enqueue(new DecompressAction(null, metaSource, dataSource, Path.GetExtension(metaSource) == UncompressedFileExtention, destination));
+            manager.Enqueue(new DecompressAction<TAlgorithm>(algorithm, converter, null, metaSource, dataSource, Path.GetExtension(metaSource) == UncompressedFileExtention, destination));
         }
     }
 }

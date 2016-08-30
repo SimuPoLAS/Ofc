@@ -5,7 +5,7 @@
  * And if you are so malicious and do so - AT LEAST REMOVE IT AFTERWARDS 
  * 
  * Zankyou no terror
- * - Widi
+ * - a-ctor
  * */
 
 namespace Ofc
@@ -14,22 +14,24 @@ namespace Ofc
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
+    using Actions;
+    using Algorithm.Blocky.Integration;
+    using Algorithm.Zetty;
+    using CLI;
+    using CLI.Validators;
+    using Core;
+    using Core.Configurations;
     using JetBrains.Annotations;
-    using Ofc.Actions;
-    using Ofc.Algorithm.Blocky.Integration;
-    using Ofc.CLI;
-    using Ofc.CLI.Validators;
-    using Ofc.Core;
-    using Ofc.Core.Configurations;
+    using Util.Converters;
 
     /// <summary>
-    ///     Contains the main entrypoint for the application and the all the CLI functionality.
+    ///   Contains the main entrypoint for the application and the all the CLI functionality.
     /// </summary>
     [UsedImplicitly]
     internal static class Program
     {
         /// <summary>
-        ///     Main entrypoint for the application.
+        ///   Main entrypoint for the application.
         /// </summary>
         /// <param name="args"></param>
         [UsedImplicitly]
@@ -58,10 +60,8 @@ namespace Ofc
                         if (inLiteral)
                         {
                             if (c == '"')
-                            {
                                 if (i != input.Length - 1 && input[i + 1] == '"') sb.Append('"');
                                 else inLiteral = false;
-                            }
                             else sb.Append(c);
                         }
                         else
@@ -82,7 +82,7 @@ namespace Ofc
 
                 // provide info
                 Console.WriteLine($"calling with {args.Length} arguments");
-                
+
                 // show the arguments that will be passed over
                 sb.Length = 0;
                 sb.Append('[');
@@ -165,13 +165,13 @@ namespace Ofc
 
                         // Compresses the specified file
                         case CommandLineLayers.CompressFile:
-                            manager.AddCompressFileAction(result[0], result[1], config);
+                            manager.AddCompressFileAction(new ZettyAlgorithm(config), NoDataConverter.Instance, config, result[0], result[1]);
                             manager.Override = result['f'];
                             manager.Handle();
                             break;
                         // Compresses the specified directory
                         case CommandLineLayers.CompressDirectory:
-                            manager.AddCompressDirectoryAction(result[0], result[1], result['r'], config);
+                            manager.AddCompressDirectoryAction(new ZettyAlgorithm(config), NoDataConverter.Instance, config, result[0], result[1], result['r']);
                             if (manager.Empty) Console.WriteLine(" WARNING: input folder is empty");
                             manager.Override = result['f'];
                             manager.Parallel = result['p'];
@@ -180,12 +180,12 @@ namespace Ofc
 
                         // Decompresses the specified file
                         case CommandLineLayers.DecompressFile:
-                            manager.AddDecompressFileAction(result[0], result[2] ?? Path.ChangeExtension(result[0], ActionUtils.DataFileExtention), result[1]);
+                            manager.AddDecompressFileAction(new ZettyAlgorithm(config), NoDataConverter.Instance, result[0], result[2] ?? Path.ChangeExtension(result[0], ActionUtils.DataFileExtention), result[1]);
                             manager.Handle();
                             break;
                         // Decompresses the specified directory
                         case CommandLineLayers.DecompressDirectory:
-                            manager.AddDecompressDirectoryAction(result[0], result[1], result['r']);
+                            manager.AddDecompressDirectoryAction(new ZettyAlgorithm(config), NoDataConverter.Instance, result[0], result[1], result['r']);
                             if (manager.Empty) Console.WriteLine(" WARNING: input folder is empty");
                             manager.Override = result['f'];
                             manager.Parallel = result['p'];
@@ -207,7 +207,7 @@ namespace Ofc
 
 
         /// <summary>
-        ///     Represents a layer in the argument parser.
+        ///   Represents a layer in the argument parser.
         /// </summary>
         internal enum CommandLineLayers
         {

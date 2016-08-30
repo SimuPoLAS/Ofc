@@ -1,23 +1,16 @@
-﻿using Ofc.Algorithm.Zetty;
-
-namespace Ofc.Actions
+﻿namespace Ofc.Actions
 {
     using System;
     using System.IO;
-    using System.Text;
-    using Ofc.Algorithm.Blocky.Integration;
-    using Ofc.Algorithm.Integration;
-    using Ofc.Algorithm.Rounding;
-    using Ofc.Algorithm.RoundingDigits;
-    using Ofc.Core;
-    using Ofc.IO;
-    using Ofc.LZMA.Helper;
-    using Ofc.Parsing;
-    using Ofc.Parsing.Hooks;
-    using Ofc.Util;
-    using Ofc.Util.Converters;
+    using Algorithm.RoundingDigits;
+    using Core;
+    using IO;
+    using LZMA.Helper;
+    using Parsing;
+    using Parsing.Hooks;
+    using Util.Converters;
 
-    internal class CompressAction : IOfcAction
+    internal class CompressAction<TAlgorithm> : IOfcAction
     {
         public string Code => "COM";
 
@@ -35,20 +28,25 @@ namespace Ofc.Actions
         public bool Force { get; set; }
 
 
-        private string _sourcePath;
-        private string _dataPath;
-        private string _metaPath;
-        private string _relativePath;
-        private string _lzmaPath;
+        private readonly IAlgorithm<TAlgorithm> _algorithm;
+        private readonly IConverter<TAlgorithm> _converter;
+        private readonly IConfiguaration _configuaration;
+        private readonly string _sourcePath;
+        private readonly string _dataPath;
+        private readonly string _metaPath;
+        private readonly string _relativePath;
+        private readonly string _lzmaPath;
+
         private bool _generatedDataFile;
-        private IConfiguaration _configuaration;
 
         private bool _faulty;
         private OfcActionResult _result = OfcActionResult.Done;
 
 
-        public CompressAction(string basePath, string sourcePath, string dataPath, string metaPath, string lzmaPath, IConfiguaration config)
+        public CompressAction(IAlgorithm<TAlgorithm> algorithm, IConverter<TAlgorithm> converter, IConfiguaration config, string basePath, string sourcePath, string dataPath, string metaPath, string lzmaPath)
         {
+            _algorithm = algorithm;
+            _converter = converter;
             _sourcePath = sourcePath;
             _dataPath = dataPath;
             _metaPath = metaPath;
@@ -81,8 +79,10 @@ namespace Ofc.Actions
                     Status = 1;
                     MarerHook hook;
                     if (_configuaration.True("rounding"))
-                        hook = new MarerHook<string>(new RoundingDigitsAlgorithm<string>(new ZettyAlgorithm(_configuaration)), new NoDataConverter(), binaryOutput, _configuaration);
-                    else hook = new MarerHook<string>(new ZettyAlgorithm(_configuaration), new NoDataConverter(), binaryOutput, _configuaration);
+                        if (typeof(TAlgorithm) == typeof(string)) hook = new MarerHook<string>(new RoundingDigitsAlgorithm<string>((IAlgorithm<string>) _algorithm), NoDataConverter.Instance, binaryOutput, _configuaration);
+                        // if not we have to use the converting algorithm
+                        else hook = new MarerHook<string>(new RoundingDigitsAlgorithm<TAlgorithm>(new StringSourceAlgorithm<TAlgorithm>(_converter, _algorithm)), NoDataConverter.Instance, binaryOutput, _configuaration);
+                    else hook = new MarerHook<TAlgorithm>(_algorithm, _converter, binaryOutput, _configuaration);
 
                     Status = 2;
                     //var hook = new MarerHook<OfcNumber>(algorithm, converter, binaryOutput, _configuaration);
